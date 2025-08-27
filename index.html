@@ -208,6 +208,60 @@
             color: var(--text-primary);
         }
         
+        /* Выпадающий список поиска */
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: var(--bg-medium);
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+        }
+        
+        .search-dropdown.active {
+            display: block;
+        }
+        
+        .search-dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .search-dropdown-item:hover {
+            background-color: var(--bg-light);
+        }
+        
+        .search-dropdown-item img {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 0.25rem;
+        }
+        
+        .search-dropdown-item-info {
+            flex: 1;
+        }
+        
+        .search-dropdown-item-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .search-dropdown-item-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
         /* Баннер */
         .hero-section {
             position: relative;
@@ -1085,10 +1139,15 @@
     <!-- Поиск -->
     <div class="search-panel" id="searchPanel">
         <div class="search-container">
-            <input type="text" placeholder="Поиск аниме..." class="search-input" id="searchInput">
+            <input type="text" placeholder="Поиск аниме..." class="search-input" id="searchInput" oninput="handleSearchInput(this.value)">
             <button class="search-btn" onclick="performSearch()">
                 <i class="fas fa-search"></i>
             </button>
+            
+            <!-- Выпадающий список результатов поиска -->
+            <div class="search-dropdown" id="searchDropdown">
+                <!-- Результаты поиска будут добавлены динамически -->
+            </div>
         </div>
     </div>
     
@@ -1370,6 +1429,10 @@
         let startX = 0;
         let currentX = 0;
         
+        // Переменные для поиска
+        let searchTimeout;
+        let searchResults = [];
+        
         // Конфигурация API
         const API_BASE_URL = 'https://shikimori.one/api';
         const SHIKIMORI_BASE_URL = 'https://shikimori.one';
@@ -1397,6 +1460,105 @@
             if (searchPanel.classList.contains('active')) {
                 document.getElementById('searchInput').focus();
             }
+        }
+        
+        // Обработка ввода в поле поиска
+        function handleSearchInput(searchTerm) {
+            clearTimeout(searchTimeout);
+            
+            if (searchTerm.trim() === '') {
+                document.getElementById('searchDropdown').classList.remove('active');
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                searchAnimesForDropdown(searchTerm);
+            }, 300);
+        }
+        
+        // Поиск аниме для выпадающего списка
+        async function searchAnimesForDropdown(searchTerm) {
+            const dropdown = document.getElementById('searchDropdown');
+            
+            if (searchTerm.trim() === '') {
+                dropdown.classList.remove('active');
+                return;
+            }
+            
+            try {
+                let apiUrl = `${API_BASE_URL}/animes?limit=10&search=${encodeURIComponent(searchTerm)}`;
+                let data = null;
+                
+                // Попытка загрузки с разными прокси
+                for (let i = 0; i < PROXY_SERVERS.length; i++) {
+                    try {
+                        const proxy = PROXY_SERVERS[i];
+                        const url = `${proxy}${encodeURIComponent(apiUrl)}`;
+                        
+                        const response = await fetch(url, {
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            data = await response.json();
+                            break;
+                        }
+                    } catch (error) {
+                        console.warn(`Прокси ${PROXY_SERVERS[i]} не сработал:`, error);
+                    }
+                }
+                
+                if (data) {
+                    searchResults = data;
+                    renderSearchDropdown(data);
+                } else {
+                    throw new Error('Не удалось загрузить данные');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка при поиске аниме для выпадающего списка:', error);
+                dropdown.innerHTML = '<div class="search-dropdown-item">Не удалось загрузить результаты</div>';
+                dropdown.classList.add('active');
+            }
+        }
+        
+        // Отображение выпадающего списка поиска
+        function renderSearchDropdown(animes) {
+            const dropdown = document.getElementById('searchDropdown');
+            dropdown.innerHTML = '';
+            
+            if (!animes || animes.length === 0) {
+                dropdown.innerHTML = '<div class="search-dropdown-item">Ничего не найдено</div>';
+                dropdown.classList.add('active');
+                return;
+            }
+            
+            animes.forEach(anime => {
+                const item = document.createElement('div');
+                item.className = 'search-dropdown-item';
+                item.onclick = () => {
+                    showAnimeDetail(anime.id);
+                    document.getElementById('searchPanel').classList.remove('active');
+                    document.getElementById('searchInput').value = '';
+                    dropdown.classList.remove('active');
+                };
+                
+                const imageUrl = anime.image ? `${SHIKIMORI_BASE_URL}${anime.image.original}` : 'https://picsum.photos/seed/anime-placeholder/40/60';
+                
+                item.innerHTML = `
+                    <img src="${imageUrl}" alt="${anime.russian || anime.name}" onerror="this.src='https://picsum.photos/seed/anime-error/40/60'">
+                    <div class="search-dropdown-item-info">
+                        <div class="search-dropdown-item-title">${anime.russian || anime.name}</div>
+                        <div class="search-dropdown-item-meta">${anime.episodes || anime.episodes_aired || '?'} серий • ${anime.score || 'N/A'} ★</div>
+                    </div>
+                `;
+                
+                dropdown.appendChild(item);
+            });
+            
+            dropdown.classList.add('active');
         }
         
         // Выполнить поиск
@@ -1445,10 +1607,12 @@
         document.addEventListener('click', function(e) {
             const searchPanel = document.getElementById('searchPanel');
             const searchButton = e.target.closest('button');
+            const searchDropdown = document.getElementById('searchDropdown');
             
             if (!searchPanel.contains(e.target) && 
                 (!searchButton || !searchButton.querySelector('.fa-search'))) {
                 searchPanel.classList.remove('active');
+                searchDropdown.classList.remove('active');
             }
         });
         
@@ -1855,7 +2019,7 @@
                     document.getElementById('animeDetailScore').textContent = anime.score || 'N/A';
                     
                     // Описание
-                    document.getElementById('animeDetailDescription').textContent = anime.description || 'Описание отсутствует.';
+                    document.getElementById('animeDetailDescription').textContent = anime.description || '';
                     
                     // Жанры
                     const genresContainer = document.getElementById('animeDetailGenres');
@@ -1868,8 +2032,6 @@
                             genreElement.textContent = genre.russian || genre.name;
                             genresContainer.appendChild(genreElement);
                         });
-                    } else {
-                        genresContainer.innerHTML = '<span class="anime-detail-genre">Жанры не указаны</span>';
                     }
                     
                     // Студия
@@ -2159,6 +2321,20 @@
                 // Создание HTML для карточки
                 const imageUrl = anime.image ? `${SHIKIMORI_BASE_URL}${anime.image.original}` : 'https://picsum.photos/seed/anime-placeholder/400/600';
                 
+                // Формируем теги жанров только если они есть
+                let genreTagsHtml = '';
+                if (anime.genres && anime.genres.length > 0) {
+                    genreTagsHtml = anime.genres.slice(0, 2).map(genre => 
+                        `<span class="genre-tag">${genre.russian || genre.name}</span>`
+                    ).join('');
+                }
+                
+                // Формируем описание только если оно есть
+                let descriptionHtml = '';
+                if (anime.description) {
+                    descriptionHtml = `<p class="popular-card-description">${truncateText(anime.description, 100)}</p>`;
+                }
+                
                 card.innerHTML = `
                     <div class="popular-card-image">
                         <img src="${imageUrl}" alt="${anime.russian || anime.name}" onerror="this.src='https://picsum.photos/seed/anime-error/400/600'">
@@ -2170,14 +2346,9 @@
                     <div class="popular-card-content">
                         <h3 class="popular-card-title">${anime.russian || anime.name}</h3>
                         <div class="genre-tags">
-                            ${anime.genres && anime.genres.length > 0 ? 
-                                anime.genres.slice(0, 2).map(genre => 
-                                    `<span class="genre-tag">${genre.russian || genre.name}</span>`
-                                ).join('') : 
-                                '<span class="genre-tag">Жанр не указан</span>'
-                            }
+                            ${genreTagsHtml}
                         </div>
-                        <p class="popular-card-description">${truncateText(anime.description || 'Описание отсутствует.', 100)}</p>
+                        ${descriptionHtml}
                     </div>
                 `;
                 
