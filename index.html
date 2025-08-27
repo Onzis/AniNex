@@ -3,750 +3,2379 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yummy Anime</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>AnimePortal - Лучшие аниме онлайн</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Кастомные стили -->
     <style>
-        body {
+        :root {
+            --primary-color: #9333ea;
+            --secondary-color: #ec4899;
+            --bg-dark: #111827;
+            --bg-medium: #1f2937;
+            --bg-light: #374151;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+        }
+        
+        * {
             font-family: 'Inter', sans-serif;
-            background-color: #1a1a1a;
-            color: #d1d1d1;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .anime-card {
-            background-color: #2c2c2c;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
         }
-        .anime-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+        
+        /* Навигация */
+        .nav-container {
+            background-color: var(--bg-medium);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        .anime-card-image {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
+        
+        .nav-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
         }
-        .anime-card-title {
-            color: white;
-            padding: 8px 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
+        
+        .nav-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 4rem;
         }
-        .rating {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: #4a90e2;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.9rem;
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .logo-icon {
+            color: var(--primary-color);
+            font-size: 1.875rem;
+        }
+        
+        .logo-text {
+            font-size: 1.25rem;
             font-weight: 700;
         }
-        .episode-info {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-        }
-        .modal {
+        
+        .nav-menu {
             display: none;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .nav-menu a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-menu a:hover {
+            color: var(--primary-color);
+        }
+        
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: color 0.2s ease;
+            font-size: 1.25rem;
+        }
+        
+        .nav-btn:hover {
+            color: var(--primary-color);
+        }
+        
+        .mobile-menu-btn {
+            display: block;
+        }
+        
+        /* Мобильное меню */
+        .mobile-menu {
             position: fixed;
-            top: 0;
+            top: 4rem;
+            left: 0;
+            width: 16rem;
+            height: calc(100vh - 4rem);
+            background-color: var(--bg-medium);
+            box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 40;
+        }
+        
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+        
+        .mobile-menu-content {
+            padding: 1rem;
+        }
+        
+        .mobile-menu a {
+            display: block;
+            padding: 0.5rem 0;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .mobile-menu a:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Поиск */
+        .search-panel {
+            position: fixed;
+            top: 4rem;
             left: 0;
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            overflow-y: auto;
+            background-color: var(--bg-medium);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 40;
+            padding: 1rem;
+            display: none;
         }
-        .modal-content {
-            background-color: #2c2c2c;
-            margin: 2% auto;
-            padding: 20px;
-            border-radius: 12px;
-            max-width: 900px;
-            width: 90%;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        
+        .search-panel.active {
+            display: block;
         }
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
+        
+        .search-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            padding-right: 2.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            outline: none;
+        }
+        
+        .search-input:focus {
+            ring: 2px solid var(--primary-color);
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
             cursor: pointer;
+            padding: 0.25rem;
         }
-        .close-button:hover {
-            color: white;
+        
+        .search-btn:hover {
+            color: var(--text-primary);
         }
-        .screenshot-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .screenshot-item {
-            border-radius: 8px;
+        
+        /* Баннер */
+        .hero-section {
+            position: relative;
+            height: 24rem;
             overflow: hidden;
-            height: 140px;
         }
-        .screenshot-item img {
+        
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+        }
+        
+        .hero-bg img {
             width: 100%;
             height: 100%;
+            object-fit: cover;
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 100%);
+        }
+        
+        .hero-content {
+            position: relative;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        
+        .hero-text {
+            max-width: 42rem;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .hero-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #7c3aed;
+        }
+        
+        .btn-secondary {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        
+        /* Секции */
+        .section {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+        }
+        
+        .section-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .section-link:hover {
+            color: #a855f7;
+        }
+        
+        /* Карточки аниме */
+        .anime-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .anime-card {
+            background-color: var(--bg-medium);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .anime-card:hover {
+            transform: translateY(-0.25rem);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .anime-card-image {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .anime-card-image img {
+            width: 100%;
+            height: 10rem;
             object-fit: cover;
             transition: transform 0.3s ease;
         }
-        .screenshot-item:hover img {
+        
+        .anime-card:hover .anime-card-image img {
             transform: scale(1.05);
         }
-        .anime-info-grid {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
-        }
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-        .tab.active {
-            border-bottom: 3px solid #f44336;
-            color: white;
-        }
-        .tab:hover {
-            color: white;
-        }
-        .search-results {
+        
+        .anime-badge {
             position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background-color: #2c2c2c;
-            border-radius: 0 0 8px 8px;
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 100;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            display: none;
-        }
-        .search-result-item {
-            display: flex;
-            padding: 10px;
-            border-bottom: 1px solid #3a3a3a;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .search-result-item:hover {
-            background-color: #3a3a3a;
-        }
-        .search-result-item img {
-            width: 50px;
-            height: 70px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
-        .search-result-info {
-            flex: 1;
-        }
-        .search-result-title {
-            font-weight: 600;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #dc2626;
             color: white;
-            margin-bottom: 4px;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
-        .search-result-rating {
-            color: #4a90e2;
-            font-size: 0.9rem;
+        
+        .anime-card-content {
+            padding: 0.75rem;
         }
-        .loading-indicator {
+        
+        .anime-card-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .anime-card-episode {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Популярные аниме */
+        .popular-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .popular-card {
+            background-color: var(--bg-medium);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        
+        .popular-card:hover {
+            transform: translateY(-0.25rem);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .popular-card-image {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .popular-card-image img {
+            width: 100%;
+            height: 12rem;
+            object-fit: cover;
+        }
+        
+        .play-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .popular-card:hover .play-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .play-icon {
+            font-size: 3rem;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .popular-card:hover .play-icon {
+            opacity: 1;
+        }
+        
+        .rating-badge {
+            position: absolute;
+            bottom: 0.5rem;
+            left: 0.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .popular-card-content {
+            padding: 1rem;
+        }
+        
+        .popular-card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .genre-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .genre-tag {
+            background-color: var(--bg-light);
+            color: var(--text-secondary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+        
+        .popular-card-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Фильтры */
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .filter-btn:hover {
+            background-color: #7c3aed;
+        }
+        
+        .filter-btn.secondary {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+        }
+        
+        .filter-btn.secondary:hover {
+            background-color: #4b5563;
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary-color);
+        }
+        
+        /* Жанры */
+        .genre-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .genre-card {
+            padding: 1.5rem;
+            border-radius: 0.5rem;
             text-align: center;
-            padding: 20px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .genre-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .genre-card-1 {
+            background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+        }
+        
+        .genre-card-2 {
+            background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+        }
+        
+        .genre-card-3 {
+            background: linear-gradient(135deg, #16a34a 0%, #0d9488 100%);
+        }
+        
+        .genre-card-4 {
+            background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
+        }
+        
+        .genre-card-5 {
+            background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+        }
+        
+        .genre-card-6 {
+            background: linear-gradient(135deg, #ca8a04 0%, #ea580c 100%);
+        }
+        
+        .genre-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .genre-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .genre-count {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        
+        /* Футер */
+        .footer {
+            background-color: var(--bg-medium);
+            margin-top: 4rem;
+            padding: 3rem 0;
+        }
+        
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-logo-icon {
+            color: var(--primary-color);
+            font-size: 1.875rem;
+        }
+        
+        .footer-logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .footer-description {
+            color: var(--text-secondary);
+        }
+        
+        .footer-links h4 {
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .social-links a {
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            transition: color 0.2s ease;
+        }
+        
+        .social-links a:hover {
+            color: var(--text-primary);
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid var(--bg-light);
+            padding-top: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        
+        /* Индикатор загрузки */
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Пагинация */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        .pagination-btn {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            border: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .pagination-btn:hover {
+            background-color: #4b5563;
+        }
+        
+        .pagination-btn.active {
+            background-color: var(--primary-color);
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Сообщение об ошибке */
+        .error-message {
+            background-color: rgba(220, 38, 38, 0.2);
+            border-left: 4px solid #dc2626;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
             display: none;
         }
-        @media (max-width: 768px) {
-            .anime-info-grid {
-                grid-template-columns: 1fr;
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        /* Кнопка повторной попытки */
+        .retry-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+        
+        .retry-button:hover {
+            background-color: #7c3aed;
+        }
+        
+        /* Детальная страница аниме */
+        .anime-detail {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: none;
+        }
+        
+        .anime-detail.active {
+            display: block;
+        }
+        
+        .anime-detail-header {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .anime-detail-image {
+            width: 100%;
+            height: 20rem;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+        
+        .anime-detail-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .anime-detail-title {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .anime-detail-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .anime-detail-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .anime-detail-meta-label {
+            color: var(--text-secondary);
+        }
+        
+        .anime-detail-description {
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+        
+        .anime-detail-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .anime-detail-section {
+            margin-top: 2rem;
+        }
+        
+        .anime-detail-section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .anime-detail-genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .anime-detail-genre {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+        }
+        
+        /* Карусель скриншотов */
+        .anime-detail-screenshots-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .anime-detail-screenshots {
+            display: flex;
+            transition: transform 0.3s ease;
+        }
+        
+        .screenshot-slide {
+            min-width: 100%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+        
+        .anime-detail-screenshot {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 0.25rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .anime-detail-screenshot:hover {
+            transform: scale(1.05);
+        }
+        
+        .screenshot-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: background-color 0.2s ease;
+        }
+        
+        .screenshot-nav:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        .screenshot-nav.prev {
+            left: 10px;
+        }
+        
+        .screenshot-nav.next {
+            right: 10px;
+        }
+        
+        .screenshot-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .screenshot-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--bg-light);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .screenshot-indicator.active {
+            background-color: var(--primary-color);
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-bottom: 1rem;
+            transition: color 0.2s ease;
+        }
+        
+        .back-button:hover {
+            color: #a855f7;
+        }
+        
+        /* Адаптивность */
+        @media (min-width: 640px) {
+            .anime-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .popular-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .genre-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .anime-detail-header {
+                flex-direction: row;
+            }
+            
+            .anime-detail-image {
+                width: 30%;
+                height: auto;
+            }
+            
+            .anime-detail-info {
+                width: 70%;
             }
         }
-        .section-title {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 30px;
+        
+        @media (min-width: 768px) {
+            .nav-menu {
+                display: flex;
+            }
+            
+            .mobile-menu-btn {
+                display: none;
+            }
+            
+            .hero-title {
+                font-size: 3rem;
+            }
+            
+            .anime-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .genre-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .footer-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 50px;
-            height: 3px;
-            background-color: #f44336;
+        
+        @media (min-width: 1024px) {
+            .anime-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            .popular-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .genre-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(1.25rem);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
         }
     </style>
 </head>
-<body class="bg-[#1a1a1a] text-[#d1d1d1]">
-
-    <!-- Header -->
-    <header class="bg-[#212121] shadow-md sticky top-0 z-50">
-        <nav class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <a href="#" class="text-[#f44336] text-2xl font-bold flex items-center space-x-2">
-                    <i class="fas fa-heart"></i>
-                    <span>Yummy Anime</span>
-                </a>
-                <div class="hidden lg:flex items-center space-x-4 ml-8 text-sm">
-                    <a href="#" class="hover:text-white transition-colors duration-200"><i class="fas fa-home mr-1"></i> Главная</a>
-                    <a href="#" class="hover:text-white transition-colors duration-200"><i class="fas fa-video mr-1"></i> Аниме</a>
-                    <a href="#" class="hover:text-white transition-colors duration-200"><i class="fas fa-medal mr-1"></i> Топ 100</a>
-                    <a href="#" class="hover:text-white transition-colors duration-200"><i class="fas fa-random mr-1"></i> Случайное</a>
-                    <a href="#" class="hover:text-white transition-colors duration-200"><i class="fas fa-users mr-1"></i> Сообщество</a>
+<body>
+    <!-- Навигация -->
+    <nav class="nav-container">
+        <div class="nav-content">
+            <div class="nav-flex">
+                <!-- Логотип -->
+                <div class="flex items-center">
+                    <button class="mobile-menu-btn nav-btn" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <a href="#" class="logo" onclick="showHomePage()">
+                        <i class="fas fa-play-circle logo-icon"></i>
+                        <span class="logo-text">AnimePortal</span>
+                    </a>
+                </div>
+                
+                <!-- Десктопное меню -->
+                <div class="nav-menu">
+                    <a href="#" onclick="showHomePage()">Главная</a>
+                    <a href="#" onclick="showAllAnimes()">Аниме</a>
+                </div>
+                
+                <!-- Поиск и профиль -->
+                <div class="nav-actions">
+                    <button class="nav-btn" onclick="toggleSearch()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="nav-btn">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
                 </div>
             </div>
-            <div class="flex items-center space-x-4 relative">
-                <div class="relative hidden sm:block">
-                    <input type="text" id="search-input" placeholder="Найти аниме..." class="bg-[#2c2c2c] text-white px-4 py-2 pr-10 rounded-full focus:outline-none focus:ring-2 focus:ring-[#f44336] w-64">
-                    <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-[#d1d1d1]"></i>
-                    <div id="search-results" class="search-results">
-                        <!-- Search results will be inserted here -->
+        </div>
+        
+        <!-- Мобильное меню -->
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-menu-content">
+                <a href="#" onclick="showHomePage()">Главная</a>
+                <a href="#" onclick="showAllAnimes()">Аниме</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Поиск -->
+    <div class="search-panel" id="searchPanel">
+        <div class="search-container">
+            <input type="text" placeholder="Поиск аниме..." class="search-input" id="searchInput">
+            <button class="search-btn" onclick="performSearch()">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Главная страница -->
+    <div id="homePage">
+        <!-- Главный баннер -->
+        <section class="hero-section">
+            <div class="hero-bg">
+                <img src="https://picsum.photos/seed/anime-banner/1920/500" alt="Featured Anime">
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-content">
+                <div class="hero-text fade-in">
+                    <h1 class="hero-title">Аниме портал с Shikimori API</h1>
+                    <p class="hero-description">Лучшие аниме с рейтингом и описанием</p>
+                    <div class="hero-buttons">
+                        <a href="#" class="btn-primary">
+                            <i class="fas fa-play"></i>
+                            Смотреть
+                        </a>
+                        <a href="#" class="btn-secondary">
+                            <i class="fas fa-info-circle"></i>
+                            Подробнее
+                        </a>
                     </div>
                 </div>
-                <button class="bg-[#3a3a3a] rounded-full p-2 hover:bg-[#4a4a4a] transition-colors duration-200">
-                    <i class="fas fa-filter text-[#d1d1d1]"></i>
-                </button>
-                <div class="relative">
-                    <img src="https://placehold.co/40x40/555/fff?text=User" alt="User Profile" class="w-10 h-10 rounded-full cursor-pointer border-2 border-[#f44336]">
+            </div>
+        </section>
+        
+        <!-- Новые серии -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Новые серии</h2>
+                <a href="#" class="section-link">Все серии →</a>
+            </div>
+            
+            <div class="anime-grid" id="newEpisodesGrid">
+                <!-- Карточки будут загружены через API -->
+            </div>
+        </section>
+        
+        <!-- Популярные аниме -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Популярные аниме</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterAnimes('all')">Все</button>
+                    <button class="filter-btn secondary" onclick="filterAnimes('ongoing')">Онгоинги</button>
+                    <button class="filter-btn secondary" onclick="filterAnimes('released')">Завершенные</button>
                 </div>
             </div>
-        </nav>
-    </header>
-
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- Tabs Navigation -->
-        <div class="flex border-b border-[#3a3a3a] mb-8 overflow-x-auto">
-            <div class="tab active" data-tab="popular">Популярное</div>
-            <div class="tab" data-tab="ongoing">Онгоинги</div>
-            <div class="tab" data-tab="upcoming">Скоро выйдет</div>
-            <div class="tab" data-tab="top">Топ аниме</div>
+            
+            <div class="error-message" id="errorMessage">
+                Не удалось загрузить данные. Пожалуйста, попробуйте позже.
+                <button class="retry-button" onclick="retryLoading()">Попробовать снова</button>
+            </div>
+            
+            <div class="loader" id="popularLoader">
+                <div class="spinner"></div>
+            </div>
+            
+            <div class="popular-grid" id="popularAnimesGrid">
+                <!-- Карточки будут загружены через API -->
+            </div>
+            
+            <div class="pagination" id="pagination">
+                <!-- Кнопки пагинации будут добавлены динамически -->
+            </div>
+        </section>
+        
+        <!-- Жанры -->
+        <section class="section">
+            <h2 class="section-title">Жанры</h2>
+            <div class="genre-grid">
+                <div class="genre-card genre-card-1" onclick="filterByGenre('action')">
+                    <i class="fas fa-dragon genre-icon"></i>
+                    <h3 class="genre-title">Экшен</h3>
+                    <p class="genre-count">245 аниме</p>
+                </div>
+                <div class="genre-card genre-card-2" onclick="filterByGenre('romance')">
+                    <i class="fas fa-heart genre-icon"></i>
+                    <h3 class="genre-title">Романтика</h3>
+                    <p class="genre-count">189 аниме</p>
+                </div>
+                <div class="genre-card genre-card-3" onclick="filterByGenre('comedy')">
+                    <i class="fas fa-laugh genre-icon"></i>
+                    <h3 class="genre-title">Комедия</h3>
+                    <p class="genre-count">312 аниме</p>
+                </div>
+                <div class="genre-card genre-card-4" onclick="filterByGenre('horror')">
+                    <i class="fas fa-skull genre-icon"></i>
+                    <h3 class="genre-title">Хоррор</h3>
+                    <p class="genre-count">87 аниме</p>
+                </div>
+                <div class="genre-card genre-card-5" onclick="filterByGenre('fantasy')">
+                    <i class="fas fa-magic genre-icon"></i>
+                    <h3 class="genre-title">Фэнтези</h3>
+                    <p class="genre-count">278 аниме</p>
+                </div>
+                <div class="genre-card genre-card-6" onclick="filterByGenre('shounen')">
+                    <i class="fas fa-graduation-cap genre-icon"></i>
+                    <h3 class="genre-title">Сёнэн</h3>
+                    <p class="genre-count">156 аниме</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Страница всех аниме -->
+    <div id="allAnimesPage" style="display: none;">
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Все аниме</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterAllAnimes('all')">Все</button>
+                    <button class="filter-btn secondary" onclick="filterAllAnimes('ongoing')">Онгоинги</button>
+                    <button class="filter-btn secondary" onclick="filterAllAnimes('released')">Завершенные</button>
+                </div>
+            </div>
+            
+            <div class="error-message" id="allAnimesErrorMessage">
+                Не удалось загрузить данные. Пожалуйста, попробуйте позже.
+                <button class="retry-button" onclick="retryAllAnimesLoading()">Попробовать снова</button>
+            </div>
+            
+            <div class="loader" id="allAnimesLoader">
+                <div class="spinner"></div>
+            </div>
+            
+            <div class="popular-grid" id="allAnimesGrid">
+                <!-- Карточки будут загружены через API -->
+            </div>
+            
+            <div class="pagination" id="allAnimesPagination">
+                <!-- Кнопки пагинации будут добавлены динамически -->
+            </div>
+        </section>
+    </div>
+    
+    <!-- Детальная страница аниме -->
+    <div id="animeDetailPage" class="anime-detail">
+        <a href="#" class="back-button" onclick="showHomePage()">
+            <i class="fas fa-arrow-left"></i>
+            Вернуться на главную
+        </a>
+        
+        <div class="anime-detail-header">
+            <img id="animeDetailImage" src="" alt="Anime" class="anime-detail-image">
+            <div class="anime-detail-info">
+                <h1 id="animeDetailTitle" class="anime-detail-title">Название аниме</h1>
+                <div class="anime-detail-meta">
+                    <div class="anime-detail-meta-item">
+                        <span class="anime-detail-meta-label">Год:</span>
+                        <span id="animeDetailYear">2023</span>
+                    </div>
+                    <div class="anime-detail-meta-item">
+                        <span class="anime-detail-meta-label">Серии:</span>
+                        <span id="animeDetailEpisodes">24</span>
+                    </div>
+                    <div class="anime-detail-meta-item">
+                        <span class="anime-detail-meta-label">Статус:</span>
+                        <span id="animeDetailStatus">Онгоинг</span>
+                    </div>
+                    <div class="anime-detail-meta-item">
+                        <span class="anime-detail-meta-label">Рейтинг:</span>
+                        <span id="animeDetailScore">9.2</span>
+                    </div>
+                </div>
+                <p id="animeDetailDescription" class="anime-detail-description">
+                    Описание аниме...
+                </p>
+                <div class="anime-detail-actions">
+                    <button class="btn-primary">
+                        <i class="fas fa-play"></i>
+                        Смотреть 1 серию
+                    </button>
+                    <button class="btn-secondary">
+                        <i class="fas fa-heart"></i>
+                        В избранное
+                    </button>
+                </div>
+            </div>
         </div>
-
-        <!-- Popular Anime Section -->
-        <section id="popular-section" class="mb-12 tab-content">
-            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-white section-title">Популярное аниме</h2>
-            <div id="popular-anime-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                <div class="anime-card flex items-center justify-center p-4">
-                    <i class="fas fa-spinner fa-spin text-4xl text-white"></i>
+        
+        <div class="anime-detail-section">
+            <h2 class="anime-detail-section-title">Жанры</h2>
+            <div class="anime-detail-genres" id="animeDetailGenres">
+                <!-- Жанры будут добавлены динамически -->
+            </div>
+        </div>
+        
+        <div class="anime-detail-section">
+            <h2 class="anime-detail-section-title">Студия</h2>
+            <p id="animeDetailStudio">MAPPA</p>
+        </div>
+        
+        <div class="anime-detail-section">
+            <h2 class="anime-detail-section-title">Скриншоты</h2>
+            <div class="anime-detail-screenshots-container">
+                <div class="anime-detail-screenshots" id="animeDetailScreenshots">
+                    <!-- Скриншоты будут добавлены динамически -->
                 </div>
+                <button class="screenshot-nav prev" onclick="changeScreenshot(-1)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="screenshot-nav next" onclick="changeScreenshot(1)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
-            <div id="popular-loading" class="loading-indicator">
-                <i class="fas fa-spinner fa-spin text-2xl text-white"></i>
-                <p class="mt-2">Загрузка...</p>
-            </div>
-        </section>
-
-        <!-- Ongoing Anime Section -->
-        <section id="ongoing-section" class="mb-12 tab-content hidden">
-            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-white section-title">Онгоинги</h2>
-            <div id="ongoing-anime-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                <div class="anime-card flex items-center justify-center p-4">
-                    <i class="fas fa-spinner fa-spin text-4xl text-white"></i>
-                </div>
-            </div>
-            <div id="ongoing-loading" class="loading-indicator">
-                <i class="fas fa-spinner fa-spin text-2xl text-white"></i>
-                <p class="mt-2">Загрузка...</p>
-            </div>
-        </section>
-
-        <!-- Upcoming Anime Section -->
-        <section id="upcoming-section" class="mb-12 tab-content hidden">
-            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-white section-title">Скоро выйдет</h2>
-            <div id="upcoming-anime-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                <div class="anime-card flex items-center justify-center p-4">
-                    <i class="fas fa-spinner fa-spin text-4xl text-white"></i>
-                </div>
-            </div>
-            <div id="upcoming-loading" class="loading-indicator">
-                <i class="fas fa-spinner fa-spin text-2xl text-white"></i>
-                <p class="mt-2">Загрузка...</p>
-            </div>
-        </section>
-
-        <!-- Top Anime Section -->
-        <section id="top-section" class="mb-12 tab-content hidden">
-            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-white section-title">Топ аниме</h2>
-            <div id="top-anime-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                <div class="anime-card flex items-center justify-center p-4">
-                    <i class="fas fa-spinner fa-spin text-4xl text-white"></i>
-                </div>
-            </div>
-            <div id="top-loading" class="loading-indicator">
-                <i class="fas fa-spinner fa-spin text-2xl text-white"></i>
-                <p class="mt-2">Загрузка...</p>
-            </div>
-        </section>
-    </main>
-
-    <!-- Anime Detail Modal -->
-    <div id="anime-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <div id="anime-detail-content">
-                <!-- Content will be filled by JavaScript -->
+            <div class="screenshot-indicators" id="screenshotIndicators">
+                <!-- Индикаторы будут добавлены динамически -->
             </div>
         </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="bg-[#212121] text-[#d1d1d1] py-8 mt-12">
-        <div class="container mx-auto px-4 text-center text-sm">
-            <p>&copy; 2025 Yummy Anime. Все права защищены.</p>
-            <p class="mt-2 text-xs text-gray-500">Данные предоставлены API Shikimori.one</p>
+    
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-logo">
+                        <i class="fas fa-play-circle footer-logo-icon"></i>
+                        <span class="footer-logo-text">AnimePortal</span>
+                    </div>
+                    <p class="footer-description">Лучший портал для просмотра аниме онлайн</p>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Навигация</h4>
+                    <ul>
+                        <li><a href="#" onclick="showHomePage()">Главная</a></li>
+                        <li><a href="#" onclick="showAllAnimes()">Аниме</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Полезное</h4>
+                    <ul>
+                        <li><a href="#">Помощь</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4>Соцсети</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-discord"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 AnimePortal. Все права защищены. Данные предоставлены Shikimori API.</p>
+            </div>
         </div>
     </footer>
-
+    
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const modal = document.getElementById('anime-modal');
-            const closeButton = document.querySelector('.close-button');
-            const animeDetailContent = document.getElementById('anime-detail-content');
-            const tabs = document.querySelectorAll('.tab');
-            const tabContents = document.querySelectorAll('.tab-content');
-            const searchInput = document.getElementById('search-input');
-            const searchResults = document.getElementById('search-results');
+        // Глобальные переменные
+        let currentPage = 1;
+        let currentFilter = 'all';
+        let currentGenre = null;
+        let totalPages = 1;
+        let allAnimes = [];
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+        
+        // Переменные для страницы всех аниме
+        let allAnimesCurrentPage = 1;
+        let allAnimesCurrentFilter = 'all';
+        let allAnimesTotalPages = 1;
+        
+        // Переменные для скриншотов
+        let currentScreenshotIndex = 0;
+        let totalScreenshotGroups = 0;
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+        
+        // Конфигурация API
+        const API_BASE_URL = 'https://shikimori.one/api';
+        const SHIKIMORI_BASE_URL = 'https://shikimori.one';
+        
+        // Список прокси-серверов для обхода CORS
+        const PROXY_SERVERS = [
+            'https://cors-anywhere.herokuapp.com/',
+            'https://api.codetabs.com/v1/proxy?quest=',
+            'https://corsproxy.io/?',
+            'https://thingproxy.freeboard.io/fetch/'
+        ];
+        
+        let currentProxyIndex = 0;
+        
+        // Мобильное меню
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('active');
+        }
+        
+        // Поиск
+        function toggleSearch() {
+            const searchPanel = document.getElementById('searchPanel');
+            searchPanel.classList.toggle('active');
+            if (searchPanel.classList.contains('active')) {
+                document.getElementById('searchInput').focus();
+            }
+        }
+        
+        // Выполнить поиск
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            if (searchTerm) {
+                searchAnimes(searchTerm);
+            }
+        }
+        
+        // Показать главную страницу
+        function showHomePage() {
+            document.getElementById('homePage').style.display = 'block';
+            document.getElementById('allAnimesPage').style.display = 'none';
+            document.getElementById('animeDetailPage').classList.remove('active');
+            window.scrollTo(0, 0);
+        }
+        
+        // Показать страницу всех аниме
+        function showAllAnimes() {
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('allAnimesPage').style.display = 'block';
+            document.getElementById('animeDetailPage').classList.remove('active');
             
-            // State variables for infinite scroll
-            let currentPage = {
-                popular: 1,
-                ongoing: 1,
-                upcoming: 1,
-                top: 1
-            };
-            let isLoading = false;
-            let hasMore = {
-                popular: true,
-                ongoing: true,
-                upcoming: true,
-                top: true
-            };
-            let currentTab = 'popular';
-            let searchTimeout = null;
-
-            // Tab switching functionality
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabId = tab.getAttribute('data-tab');
-                    currentTab = tabId;
-                    
-                    // Update active tab
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    // Show corresponding content
-                    tabContents.forEach(content => content.classList.add('hidden'));
-                    document.getElementById(`${tabId}-section`).classList.remove('hidden');
-                    
-                    // Load data for this tab if not already loaded
-                    if (document.getElementById(`${tabId}-anime-list`).children.length <= 1) {
-                        loadTabData(tabId, 1, true);
-                    }
-                });
+            // Загрузка всех аниме, если еще не загружены
+            if (document.getElementById('allAnimesGrid').children.length === 0) {
+                loadAllAnimes();
+            }
+            
+            window.scrollTo(0, 0);
+        }
+        
+        // Показать детальную страницу аниме
+        function showAnimeDetail(animeId) {
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('allAnimesPage').style.display = 'none';
+            document.getElementById('animeDetailPage').classList.add('active');
+            
+            // Загрузка деталей аниме
+            loadAnimeDetails(animeId);
+            
+            window.scrollTo(0, 0);
+        }
+        
+        // Закрытие поиска при клике вне его
+        document.addEventListener('click', function(e) {
+            const searchPanel = document.getElementById('searchPanel');
+            const searchButton = e.target.closest('button');
+            
+            if (!searchPanel.contains(e.target) && 
+                (!searchButton || !searchButton.querySelector('.fa-search'))) {
+                searchPanel.classList.remove('active');
+            }
+        });
+        
+        // Фильтрация аниме на главной странице
+        function filterAnimes(filter) {
+            currentFilter = filter;
+            currentPage = 1;
+            
+            // Обновление активной кнопки
+            document.querySelectorAll('#homePage .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('secondary');
             });
-
-            // Close modal when clicking on X
-            closeButton.addEventListener('click', () => {
-                modal.style.display = 'none';
+            event.target.classList.add('active');
+            event.target.classList.remove('secondary');
+            
+            // Загрузка аниме с новым фильтром
+            loadPopularAnimes();
+        }
+        
+        // Фильтрация аниме на странице всех аниме
+        function filterAllAnimes(filter) {
+            allAnimesCurrentFilter = filter;
+            allAnimesCurrentPage = 1;
+            
+            // Обновление активной кнопки
+            document.querySelectorAll('#allAnimesPage .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('secondary');
             });
-
-            // Close modal when clicking outside of it
-            window.addEventListener('click', (event) => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
+            event.target.classList.add('active');
+            event.target.classList.remove('secondary');
+            
+            // Загрузка аниме с новым фильтром
+            loadAllAnimes();
+        }
+        
+        // Фильтрация по жанру
+        function filterByGenre(genre) {
+            currentGenre = genre;
+            currentPage = 1;
+            currentFilter = 'all';
+            
+            // Обновление активной кнопки
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('secondary');
+            });
+            document.querySelector('.filter-btn').classList.add('active');
+            
+            // Переход на страницу всех аниме с фильтром по жанру
+            showAllAnimes();
+            allAnimesCurrentFilter = 'all';
+            allAnimesCurrentPage = 1;
+            currentGenre = genre;
+            loadAllAnimes();
+        }
+        
+        // Повторная попытка загрузки
+        function retryLoading() {
+            retryCount = 0;
+            currentProxyIndex = 0;
+            document.getElementById('errorMessage').classList.remove('show');
+            loadPopularAnimes();
+        }
+        
+        // Повторная попытка загрузки всех аниме
+        function retryAllAnimesLoading() {
+            retryCount = 0;
+            currentProxyIndex = 0;
+            document.getElementById('allAnimesErrorMessage').classList.remove('show');
+            loadAllAnimes();
+        }
+        
+        // Получение текущего прокси
+        function getCurrentProxy() {
+            const proxy = PROXY_SERVERS[currentProxyIndex];
+            currentProxyIndex = (currentProxyIndex + 1) % PROXY_SERVERS.length;
+            return proxy;
+        }
+        
+        // Загрузка популярных аниме
+        async function loadPopularAnimes() {
+            const loader = document.getElementById('popularLoader');
+            const grid = document.getElementById('popularAnimesGrid');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Показать индикатор загрузки
+            loader.style.display = 'flex';
+            grid.innerHTML = '';
+            errorMessage.classList.remove('show');
+            
+            try {
+                // Формирование URL запроса
+                let apiUrl = `${API_BASE_URL}/animes?limit=50&page=${currentPage}&order=popularity`;
+                
+                // Добавление фильтров
+                if (currentFilter === 'ongoing') {
+                    apiUrl += '&status=ongoing';
+                } else if (currentFilter === 'released') {
+                    apiUrl += '&status=released';
                 }
                 
-                // Close search results when clicking outside
-                if (!event.target.closest('.relative') && searchResults.style.display === 'block') {
-                    searchResults.style.display = 'none';
-                }
-            });
-
-            // Search functionality
-            searchInput.addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                const query = e.target.value.trim();
-                
-                if (query.length < 2) {
-                    searchResults.style.display = 'none';
-                    searchResults.innerHTML = '';
-                    return;
+                // Добавление жанра
+                if (currentGenre) {
+                    apiUrl += `&genre=${currentGenre}`;
                 }
                 
-                searchTimeout = setTimeout(() => {
-                    searchAnime(query);
-                }, 500);
-            });
-
-            searchInput.addEventListener('focus', () => {
-                if (searchResults.innerHTML !== '') {
-                    searchResults.style.display = 'block';
-                }
-            });
-
-            // Infinite scroll functionality
-            window.addEventListener('scroll', () => {
-                if (isLoading || !hasMore[currentTab]) return;
+                // Попытка загрузки с разными прокси
+                let data = null;
+                let lastError = null;
                 
-                const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-                if (scrollTop + clientHeight >= scrollHeight - 100) {
-                    loadMoreAnime();
-                }
-            });
-
-            // Function to search anime
-            async function searchAnime(query) {
-                try {
-                    searchResults.innerHTML = `
-                        <div class="p-4 text-center">
-                            <i class="fas fa-spinner fa-spin text-white"></i>
-                            <span class="ml-2">Поиск...</span>
-                        </div>
-                    `;
-                    searchResults.style.display = 'block';
-                    
-                    const response = await fetch(`https://shikimori.one/api/animes?search=${encodeURIComponent(query)}&limit=10`);
-                    const data = await response.json();
-                    
-                    if (data.length === 0) {
-                        searchResults.innerHTML = `
-                            <div class="p-4 text-center text-gray-400">
-                                Ничего не найдено
-                            </div>
-                        `;
-                        return;
-                    }
-                    
-                    searchResults.innerHTML = '';
-                    data.forEach(anime => {
-                        const item = document.createElement('div');
-                        item.className = 'search-result-item';
-                        item.innerHTML = `
-                            <img src="https://shikimori.one${anime.image.preview}" alt="${anime.russian || anime.name}">
-                            <div class="search-result-info">
-                                <div class="search-result-title">${anime.russian || anime.name}</div>
-                                ${anime.score ? `<div class="search-result-rating">★ ${anime.score}</div>` : ''}
-                            </div>
-                        `;
-                        item.addEventListener('click', () => {
-                            showAnimeDetails(anime.id);
-                            searchResults.style.display = 'none';
-                            searchInput.value = '';
-                        });
-                        searchResults.appendChild(item);
-                    });
-                } catch (error) {
-                    console.error('Ошибка при поиске:', error);
-                    searchResults.innerHTML = `
-                        <div class="p-4 text-center text-red-400">
-                            Ошибка при поиске
-                        </div>
-                    `;
-                }
-            }
-
-            // Function to fetch anime data from Shikimori API based on category
-            async function fetchAnimeData(category, page = 1, limit = 24) {
-                try {
-                    let url = '';
-                    
-                    switch(category) {
-                        case 'popular':
-                            url = `https://shikimori.one/api/animes?page=${page}&limit=${limit}&order=popularity`;
-                            break;
-                        case 'ongoing':
-                            url = `https://shikimori.one/api/animes?page=${page}&limit=${limit}&status=ongoing&order=popularity`;
-                            break;
-                        case 'upcoming':
-                            url = `https://shikimori.one/api/animes?page=${page}&limit=${limit}&status=anons&order=popularity`;
-                            break;
-                        case 'top':
-                            url = `https://shikimori.one/api/animes?page=${page}&limit=${limit}&order=ranked`;
-                            break;
-                        default:
-                            url = `https://shikimori.one/api/animes?page=${page}&limit=${limit}&order=popularity`;
-                    }
-                    
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    
-                    // Check if we have more data
-                    hasMore[category] = data.length === limit;
-                    
-                    // Format data for our application
-                    return data.map(anime => ({
-                        id: anime.id,
-                        title: anime.russian || anime.name,
-                        originalTitle: anime.name,
-                        image: `https://shikimori.one${anime.image.original}`,
-                        rating: anime.score,
-                        episodes: anime.episodes,
-                        status: anime.status,
-                        kind: anime.kind,
-                        description: anime.description || "Описание отсутствует",
-                        genres: anime.genres,
-                        aired_on: anime.aired_on,
-                        released_on: anime.released_on
-                    }));
-                } catch (error) {
-                    console.error('Ошибка при загрузке данных с Shikimori:', error);
-                    return [];
-                }
-            }
-
-            // Function to fetch anime screenshots from Shikimori API
-            async function fetchAnimeScreenshots(animeId) {
-                try {
-                    const response = await fetch(`https://shikimori.one/api/animes/${animeId}/screenshots`);
-                    const data = await response.json();
-                    return data.map(screenshot => `https://shikimori.one${screenshot.original}`);
-                } catch (error) {
-                    console.error('Ошибка при загрузке скриншотов:', error);
-                    return [];
-                }
-            }
-
-            // Function to fetch anime details from Shikimori API
-            async function fetchAnimeDetails(animeId) {
-                try {
-                    const response = await fetch(`https://shikimori.one/api/animes/${animeId}`);
-                    return await response.json();
-                } catch (error) {
-                    console.error('Ошибка при загрузке деталей аниме:', error);
-                    return null;
-                }
-            }
-
-            // Function to show anime details in modal
-            async function showAnimeDetails(animeId) {
-                // Show loading state
-                animeDetailContent.innerHTML = `
-                    <div class="flex justify-center items-center h-64">
-                        <i class="fas fa-spinner fa-spin text-4xl text-white"></i>
-                    </div>
-                `;
-                modal.style.display = 'block';
-
-                try {
-                    // Fetch anime details and screenshots
-                    const [animeDetails, screenshots] = await Promise.all([
-                        fetchAnimeDetails(animeId),
-                        fetchAnimeScreenshots(animeId)
-                    ]);
-
-                    if (!animeDetails) {
-                        animeDetailContent.innerHTML = `<p class="text-center text-red-500">Не удалось загрузить информацию об аниме.</p>`;
-                        return;
-                    }
-
-                    // Format genres
-                    const genres = animeDetails.genres.map(genre => genre.russian || genre.name).join(', ');
-
-                    // Format dates
-                    const airedDate = animeDetails.aired_on ? new Date(animeDetails.aired_on).toLocaleDateString('ru-RU') : 'Неизвестно';
-                    const releasedDate = animeDetails.released_on ? new Date(animeDetails.released_on).toLocaleDateString('ru-RU') : 'Еще выходит';
-
-                    // Create HTML for anime details
-                    animeDetailContent.innerHTML = `
-                        <div class="anime-info-grid">
-                            <div>
-                                <img src="https://shikimori.one${animeDetails.image.original}" alt="${animeDetails.russian || animeDetails.name}" class="w-full rounded-lg">
-                                <div class="mt-4 text-center">
-                                    <span class="rating bg-[#4a90e2] text-white px-3 py-1 rounded-full text-lg font-bold">${animeDetails.score || 'N/A'}</span>
-                                    <p class="mt-2 text-sm text-gray-400">Рейтинг</p>
-                                </div>
-                            </div>
-                            <div>
-                                <h2 class="text-2xl font-bold text-white mb-2">${animeDetails.russian || animeDetails.name}</h2>
-                                <p class="text-gray-400 mb-4">${animeDetails.japanese || animeDetails.name}</p>
-                                
-                                <div class="bg-[#3a3a3a] p-4 rounded-lg mb-4">
-                                    <p class="text-white">${animeDetails.description ? animeDetails.description.replace(/\[.*?\]/g, '') : 'Описание отсутствует'}</p>
-                                </div>
-                                
-                                <div class="grid grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-gray-400">Тип</h3>
-                                        <p class="text-white">${animeDetails.kind || 'Не указано'}</p>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-gray-400">Эпизоды</h3>
-                                        <p class="text-white">${animeDetails.episodes || 'Не указано'}</p>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-gray-400">Статус</h3>
-                                        <p class="text-white">${animeDetails.status ? formatStatus(animeDetails.status) : 'Не указано'}</p>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-gray-400">Жанры</h3>
-                                        <p class="text-white">${genres || 'Не указано'}</p>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-gray-400">Дата выхода</h3>
-                                        <p class="text-white">${airedDate}</p>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-gray-400">Завершение</h3>
-                                        <p class="text-white">${releasedDate}</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex space-x-2 mb-6">
-                                    <button class="bg-[#f44336] text-white px-4 py-2 rounded-lg flex items-center">
-                                        <i class="fas fa-play mr-2"></i> Смотреть
-                                    </button>
-                                    <button class="bg-[#3a3a3a] text-white px-4 py-2 rounded-lg flex items-center">
-                                        <i class="fas fa-plus mr-2"></i> В список
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                for (let i = 0; i < PROXY_SERVERS.length; i++) {
+                    try {
+                        const proxy = getCurrentProxy();
+                        const url = `${proxy}${encodeURIComponent(apiUrl)}`;
                         
-                        <h3 class="text-xl font-bold text-white mb-4">Моменты из аниме</h3>
-                        <div class="screenshot-gallery">
-                            ${screenshots.length > 0 ? 
-                                screenshots.slice(0, 6).map(screenshot => `
-                                    <div class="screenshot-item">
-                                        <img src="${screenshot}" alt="Скриншот">
-                                    </div>
-                                `).join('') : 
-                                '<p class="text-gray-400">Скриншоты не найдены</p>'
+                        const response = await fetch(url, {
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            data = await response.json();
+                            break;
+                        }
+                    } catch (error) {
+                        lastError = error;
+                        console.warn(`Прокси ${PROXY_SERVERS[i]} не сработал:`, error);
+                    }
+                }
+                
+                if (!data) {
+                    throw lastError || new Error('Не удалось загрузить данные');
+                }
+                
+                // Сохранение общего количества страниц
+                if (Array.isArray(data)) {
+                    totalPages = Math.ceil(data.length / 8);
+                } else {
+                    totalPages = 1;
+                }
+                
+                // Отображение аниме
+                renderAnimes(data.slice(0, 8), grid);
+                
+                // Обновление пагинации
+                renderPagination();
+                
+                // Сброс счетчика повторных попыток
+                retryCount = 0;
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке аниме:', error);
+                
+                retryCount++;
+                if (retryCount < MAX_RETRIES) {
+                    // Повторная попытка через 2 секунды
+                    setTimeout(() => {
+                        loadPopularAnimes();
+                    }, 2000);
+                } else {
+                    errorMessage.classList.add('show');
+                }
+            } finally {
+                // Скрыть индикатор загрузки
+                loader.style.display = 'none';
+            }
+        }
+        
+        // Загрузка всех аниме
+        async function loadAllAnimes() {
+            const loader = document.getElementById('allAnimesLoader');
+            const grid = document.getElementById('allAnimesGrid');
+            const errorMessage = document.getElementById('allAnimesErrorMessage');
+            
+            // Показать индикатор загрузки
+            loader.style.display = 'flex';
+            grid.innerHTML = '';
+            errorMessage.classList.remove('show');
+            
+            try {
+                // Формирование URL запроса
+                let apiUrl = `${API_BASE_URL}/animes?limit=50&page=${allAnimesCurrentPage}&order=popularity`;
+                
+                // Добавление фильтров
+                if (allAnimesCurrentFilter === 'ongoing') {
+                    apiUrl += '&status=ongoing';
+                } else if (allAnimesCurrentFilter === 'released') {
+                    apiUrl += '&status=released';
+                }
+                
+                // Добавление жанра
+                if (currentGenre) {
+                    apiUrl += `&genre=${currentGenre}`;
+                }
+                
+                // Попытка загрузки с разными прокси
+                let data = null;
+                let lastError = null;
+                
+                for (let i = 0; i < PROXY_SERVERS.length; i++) {
+                    try {
+                        const proxy = getCurrentProxy();
+                        const url = `${proxy}${encodeURIComponent(apiUrl)}`;
+                        
+                        const response = await fetch(url, {
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            data = await response.json();
+                            break;
+                        }
+                    } catch (error) {
+                        lastError = error;
+                        console.warn(`Прокси ${PROXY_SERVERS[i]} не сработал:`, error);
+                    }
+                }
+                
+                if (!data) {
+                    throw lastError || new Error('Не удалось загрузить данные');
+                }
+                
+                // Сохранение общего количества страниц
+                if (Array.isArray(data)) {
+                    allAnimesTotalPages = Math.ceil(data.length / 12);
+                } else {
+                    allAnimesTotalPages = 1;
+                }
+                
+                // Отображение аниме
+                renderAnimes(data.slice(0, 12), grid);
+                
+                // Обновление пагинации
+                renderAllAnimesPagination();
+                
+                // Сброс счетчика повторных попыток
+                retryCount = 0;
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке всех аниме:', error);
+                
+                retryCount++;
+                if (retryCount < MAX_RETRIES) {
+                    // Повторная попытка через 2 секунды
+                    setTimeout(() => {
+                        loadAllAnimes();
+                    }, 2000);
+                } else {
+                    errorMessage.classList.add('show');
+                }
+            } finally {
+                // Скрыть индикатор загрузки
+                loader.style.display = 'none';
+            }
+        }
+        
+        // Загрузка новых серий
+        async function loadNewEpisodes() {
+            const grid = document.getElementById('newEpisodesGrid');
+            
+            try {
+                let apiUrl = `${API_BASE_URL}/animes?limit=50&page=1&order=updated_at`;
+                let data = null;
+                
+                // Попытка загрузки с разными прокси
+                for (let i = 0; i < PROXY_SERVERS.length; i++) {
+                    try {
+                        const proxy = PROXY_SERVERS[i];
+                        const url = `${proxy}${encodeURIComponent(apiUrl)}`;
+                        
+                        const response = await fetch(url, {
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            data = await response.json();
+                            break;
+                        }
+                    } catch (error) {
+                        console.warn(`Прокси ${PROXY_SERVERS[i]} не сработал:`, error);
+                    }
+                }
+                
+                if (data) {
+                    // Отображение аниме
+                    renderNewEpisodes(data.slice(0, 6), grid);
+                } else {
+                    throw new Error('Не удалось загрузить данные');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке новых серий:', error);
+                grid.innerHTML = '<p>Не удалось загрузить данные.</p>';
+            }
+        }
+        
+        // Поиск аниме
+        async function searchAnimes(searchTerm) {
+            // Переход на страницу всех аниме с результатами поиска
+            showAllAnimes();
+            allAnimesCurrentFilter = 'all';
+            allAnimesCurrentPage = 1;
+            currentGenre = null;
+            
+            const loader = document.getElementById('allAnimesLoader');
+            const grid = document.getElementById('allAnimesGrid');
+            const pagination = document.getElementById('allAnimesPagination');
+            const errorMessage = document.getElementById('allAnimesErrorMessage');
+            
+            // Показать индикатор загрузки
+            loader.style.display = 'flex';
+            grid.innerHTML = '';
+            pagination.innerHTML = '';
+            errorMessage.classList.remove('show');
+            
+            try {
+                let apiUrl = `${API_BASE_URL}/animes?limit=50&search=${encodeURIComponent(searchTerm)}`;
+                let data = null;
+                
+                // Попытка загрузки с разными прокси
+                for (let i = 0; i < PROXY_SERVERS.length; i++) {
+                    try {
+                        const proxy = PROXY_SERVERS[i];
+                        const url = `${proxy}${encodeURIComponent(apiUrl)}`;
+                        
+                        const response = await fetch(url, {
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            data = await response.json();
+                            break;
+                        }
+                    } catch (error) {
+                        console.warn(`Прокси ${PROXY_SERVERS[i]} не сработал:`, error);
+                    }
+                }
+                
+                if (data) {
+                    // Отображение аниме
+                    renderAnimes(data.slice(0, 12), grid);
+                    
+                    // Скрыть пагинацию для результатов поиска
+                    pagination.innerHTML = '';
+                } else {
+                    throw new Error('Не удалось загрузить данные');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка при поиске аниме:', error);
+                errorMessage.classList.add('show');
+                grid.innerHTML = '';
+            } finally {
+                // Скрыть индикатор загрузки
+                loader.style.display = 'none';
+            }
+        }
+        
+        // Загрузка деталей аниме
+        async function loadAnimeDetails(animeId) {
+            try {
+                let apiUrl = `${API_BASE_URL}/animes/${animeId}`;
+                let anime = null;
+                
+                // Попытка загрузки с разными прокси
+                for (let i = 0; i < PROXY_SERVERS.length; i++) {
+                    try {
+                        const proxy = PROXY_SERVERS[i];
+                        const url = `${proxy}${encodeURIComponent(apiUrl)}`;
+                        
+                        const response = await fetch(url, {
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            anime = await response.json();
+                            break;
+                        }
+                    } catch (error) {
+                        console.warn(`Прокси ${PROXY_SERVERS[i]} не сработал:`, error);
+                    }
+                }
+                
+                if (anime) {
+                    // Отображение деталей на странице
+                    document.getElementById('animeDetailImage').src = anime.image ? `${SHIKIMORI_BASE_URL}${anime.image.original}` : 'https://picsum.photos/seed/anime-placeholder/400/600';
+                    document.getElementById('animeDetailTitle').textContent = anime.russian || anime.name;
+                    
+                    // Информация
+                    document.getElementById('animeDetailYear').textContent = anime.aired_on ? new Date(anime.aired_on).getFullYear() : 'N/A';
+                    document.getElementById('animeDetailEpisodes').textContent = anime.episodes || anime.episodes_aired || 'N/A';
+                    document.getElementById('animeDetailStatus').textContent = getStatusText(anime.status);
+                    document.getElementById('animeDetailScore').textContent = anime.score || 'N/A';
+                    
+                    // Описание
+                    document.getElementById('animeDetailDescription').textContent = anime.description || 'Описание отсутствует.';
+                    
+                    // Жанры
+                    const genresContainer = document.getElementById('animeDetailGenres');
+                    genresContainer.innerHTML = '';
+                    
+                    if (anime.genres && anime.genres.length > 0) {
+                        anime.genres.forEach(genre => {
+                            const genreElement = document.createElement('span');
+                            genreElement.className = 'anime-detail-genre';
+                            genreElement.textContent = genre.russian || genre.name;
+                            genresContainer.appendChild(genreElement);
+                        });
+                    } else {
+                        genresContainer.innerHTML = '<span class="anime-detail-genre">Жанры не указаны</span>';
+                    }
+                    
+                    // Студия
+                    document.getElementById('animeDetailStudio').textContent = 
+                        anime.studios && anime.studios.length > 0 ? anime.studios[0].name : 'N/A';
+                    
+                    // Загрузка скриншотов
+                    loadAnimeScreenshots(animeId);
+                    
+                    // Обновление кнопок
+                    document.querySelector('.anime-detail-actions .btn-primary').onclick = () => {
+                        alert(`Переход к просмотру: ${anime.russian || anime.name}`);
+                    };
+                    
+                    document.querySelector('.anime-detail-actions .btn-secondary').onclick = () => {
+                        alert(`Добавлено в избранное: ${anime.russian || anime.name}`);
+                    };
+                } else {
+                    throw new Error('Не удалось загрузить данные');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке деталей аниме:', error);
+                document.getElementById('animeDetailTitle').textContent = 'Ошибка загрузки данных';
+                document.getElementById('animeDetailDescription').textContent = 'Не удалось загрузить информацию об аниме.';
+            }
+        }
+        
+        // Загрузка скриншотов аниме
+        async function loadAnimeScreenshots(animeId) {
+            const screenshotsContainer = document.getElementById('animeDetailScreenshots');
+            const indicatorsContainer = document.getElementById('screenshotIndicators');
+            
+            screenshotsContainer.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+            indicatorsContainer.innerHTML = '';
+            
+            try {
+                let apiUrl = `${API_BASE_URL}/animes/${animeId}/screenshots`;
+                let screenshots = null;
+                
+                // Попытка загрузки с разными прокси
+                for (let i = 0; i < PROXY_SERVERS.length; i++) {
+                    try {
+                        const proxy = PROXY_SERVERS[i];
+                        const url = `${proxy}${encodeURIComponent(apiUrl)}`;
+                        
+                        const response = await fetch(url, {
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            screenshots = await response.json();
+                            break;
+                        }
+                    } catch (error) {
+                        console.warn(`Прокси ${PROXY_SERVERS[i]} не сработал:`, error);
+                    }
+                }
+                
+                screenshotsContainer.innerHTML = '';
+                
+                if (screenshots && screenshots.length > 0) {
+                    // Разделяем скриншоты на группы по 4
+                    const screenshotGroups = [];
+                    for (let i = 0; i < screenshots.length; i += 4) {
+                        screenshotGroups.push(screenshots.slice(i, i + 4));
+                    }
+                    
+                    totalScreenshotGroups = screenshotGroups.length;
+                    currentScreenshotIndex = 0;
+                    
+                    // Создаем слайды для каждой группы
+                    screenshotGroups.forEach((group, groupIndex) => {
+                        const slide = document.createElement('div');
+                        slide.className = 'screenshot-slide';
+                        
+                        // Добавляем скриншоты в сетку 2x2
+                        group.forEach((screenshot, index) => {
+                            const img = document.createElement('img');
+                            img.src = `${SHIKIMORI_BASE_URL}${screenshot.original}`;
+                            img.alt = `Скриншот ${groupIndex * 4 + index + 1}`;
+                            img.className = 'anime-detail-screenshot';
+                            img.onerror = function() {
+                                this.src = `https://picsum.photos/seed/screenshot-${groupIndex * 4 + index + 1}/400/300`;
+                            };
+                            slide.appendChild(img);
+                        });
+                        
+                        // Если в последней группе меньше 4 скриншотов, добавляем пустые места
+                        if (group.length < 4 && groupIndex === screenshotGroups.length - 1) {
+                            for (let i = group.length; i < 4; i++) {
+                                const placeholder = document.createElement('div');
+                                placeholder.className = 'anime-detail-screenshot';
+                                placeholder.style.backgroundColor = 'var(--bg-light)';
+                                slide.appendChild(placeholder);
+                            }
+                        }
+                        
+                        screenshotsContainer.appendChild(slide);
+                        
+                        // Добавляем индикатор для группы
+                        const indicator = document.createElement('div');
+                        indicator.className = 'screenshot-indicator';
+                        if (groupIndex === 0) {
+                            indicator.classList.add('active');
+                        }
+                        indicator.onclick = () => goToScreenshot(groupIndex);
+                        indicatorsContainer.appendChild(indicator);
+                    });
+                    
+                    // Добавляем обработчики для свайпа
+                    setupScreenshotSwipe();
+                    
+                    // Обновляем видимость кнопок
+                    updateScreenshotButtons();
+                } else {
+                    // Если скриншоты не найдены, показываем одну группу с заглушками
+                    const slide = document.createElement('div');
+                    slide.className = 'screenshot-slide';
+                    
+                    for (let i = 0; i < 4; i++) {
+                        const img = document.createElement('img');
+                        img.src = `https://picsum.photos/seed/screenshot-${i + 1}/400/300`;
+                        img.alt = `Скриншот ${i + 1}`;
+                        img.className = 'anime-detail-screenshot';
+                        slide.appendChild(img);
+                    }
+                    
+                    screenshotsContainer.appendChild(slide);
+                    
+                    // Добавляем индикатор
+                    const indicator = document.createElement('div');
+                    indicator.className = 'screenshot-indicator active';
+                    indicatorsContainer.appendChild(indicator);
+                    
+                    totalScreenshotGroups = 1;
+                    currentScreenshotIndex = 0;
+                    
+                    // Скрываем кнопки навигации
+                    updateScreenshotButtons();
+                }
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке скриншотов:', error);
+                screenshotsContainer.innerHTML = '';
+                
+                // В случае ошибки показываем одну группу с заглушками
+                const slide = document.createElement('div');
+                slide.className = 'screenshot-slide';
+                
+                for (let i = 0; i < 4; i++) {
+                    const img = document.createElement('img');
+                    img.src = `https://picsum.photos/seed/screenshot-${i + 1}/400/300`;
+                    img.alt = `Скриншот ${i + 1}`;
+                    img.className = 'anime-detail-screenshot';
+                    slide.appendChild(img);
+                }
+                
+                screenshotsContainer.appendChild(slide);
+                
+                // Добавляем индикатор
+                const indicator = document.createElement('div');
+                indicator.className = 'screenshot-indicator active';
+                indicatorsContainer.appendChild(indicator);
+                
+                totalScreenshotGroups = 1;
+                currentScreenshotIndex = 0;
+                
+                // Скрываем кнопки навигации
+                updateScreenshotButtons();
+            }
+        }
+        
+        // Настройка свайпа для скриншотов
+        function setupScreenshotSwipe() {
+            const container = document.querySelector('.anime-detail-screenshots-container');
+            
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                currentX = startX;
+                container.style.cursor = 'grabbing';
+            });
+            
+            container.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                currentX = e.clientX;
+            });
+            
+            container.addEventListener('mouseup', (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                container.style.cursor = 'grab';
+                
+                const diff = startX - e.clientX;
+                const threshold = 50; // Порог для свайпа
+                
+                if (Math.abs(diff) > threshold) {
+                    if (diff > 0) {
+                        // Свайп влево - следующая группа
+                        changeScreenshot(1);
+                    } else {
+                        // Свайп вправо - предыдущая группа
+                        changeScreenshot(-1);
+                    }
+                }
+            });
+            
+            container.addEventListener('mouseleave', () => {
+                isDragging = false;
+                container.style.cursor = 'grab';
+            });
+        }
+        
+        // Переключение группы скриншотов
+        function changeScreenshot(direction) {
+            if (totalScreenshotGroups <= 1) return;
+            
+            currentScreenshotIndex += direction;
+            
+            // Зацикливание
+            if (currentScreenshotIndex < 0) {
+                currentScreenshotIndex = totalScreenshotGroups - 1;
+            } else if (currentScreenshotIndex >= totalScreenshotGroups) {
+                currentScreenshotIndex = 0;
+            }
+            
+            updateScreenshotDisplay();
+            updateScreenshotButtons();
+        }
+        
+        // Переход к конкретной группе скриншотов
+        function goToScreenshot(index) {
+            if (index < 0 || index >= totalScreenshotGroups) return;
+            
+            currentScreenshotIndex = index;
+            updateScreenshotDisplay();
+            updateScreenshotButtons();
+        }
+        
+        // Обновление отображения группы скриншотов
+        function updateScreenshotDisplay() {
+            const container = document.getElementById('animeDetailScreenshots');
+            container.style.transform = `translateX(-${currentScreenshotIndex * 100}%)`;
+            
+            // Обновление индикаторов
+            const indicators = document.querySelectorAll('.screenshot-indicator');
+            indicators.forEach((indicator, index) => {
+                if (index === currentScreenshotIndex) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.remove('active');
+                }
+            });
+        }
+        
+        // Обновление видимости кнопок
+        function updateScreenshotButtons() {
+            const prevBtn = document.querySelector('.screenshot-nav.prev');
+            const nextBtn = document.querySelector('.screenshot-nav.next');
+            
+            if (totalScreenshotGroups <= 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'block';
+                nextBtn.style.display = 'block';
+            }
+        }
+        
+        // Отображение аниме
+        function renderAnimes(animes, container) {
+            container.innerHTML = '';
+            
+            if (!animes || animes.length === 0) {
+                container.innerHTML = '<p>Аниме не найдены.</p>';
+                return;
+            }
+            
+            animes.forEach(anime => {
+                const card = document.createElement('div');
+                card.className = 'popular-card';
+                card.onclick = () => showAnimeDetail(anime.id);
+                
+                // Создание HTML для карточки
+                const imageUrl = anime.image ? `${SHIKIMORI_BASE_URL}${anime.image.original}` : 'https://picsum.photos/seed/anime-placeholder/400/600';
+                
+                card.innerHTML = `
+                    <div class="popular-card-image">
+                        <img src="${imageUrl}" alt="${anime.russian || anime.name}" onerror="this.src='https://picsum.photos/seed/anime-error/400/600'">
+                        <div class="play-overlay">
+                            <i class="fas fa-play-circle play-icon"></i>
+                        </div>
+                        <div class="rating-badge">${anime.score || 'N/A'}</div>
+                    </div>
+                    <div class="popular-card-content">
+                        <h3 class="popular-card-title">${anime.russian || anime.name}</h3>
+                        <div class="genre-tags">
+                            ${anime.genres && anime.genres.length > 0 ? 
+                                anime.genres.slice(0, 2).map(genre => 
+                                    `<span class="genre-tag">${genre.russian || genre.name}</span>`
+                                ).join('') : 
+                                '<span class="genre-tag">Жанр не указан</span>'
                             }
                         </div>
-                    `;
-                } catch (error) {
-                    console.error('Ошибка при загрузке деталей:', error);
-                    animeDetailContent.innerHTML = `<p class="text-center text-red-500">Не удалось загрузить информацию об аниме.</p>`;
-                }
-            }
-
-            // Helper function to format status
-            function formatStatus(status) {
-                const statusMap = {
-                    'anons': 'Анонсировано',
-                    'ongoing': 'Онгоинг',
-                    'released': 'Вышло'
-                };
-                return statusMap[status] || status;
-            }
-
-            // Function to create an anime card HTML element
-            function createAnimeCard(anime) {
-                return `
-                    <div class="anime-card cursor-pointer" data-id="${anime.id}">
-                        <div class="relative">
-                            <img src="${anime.image}" alt="${anime.title}" class="anime-card-image">
-                            ${anime.rating ? `<span class="rating bg-[#4a90e2]">${anime.rating}</span>` : ''}
-                            ${anime.episodes ? `<div class="episode-info">
-                                <span class="text-sm">${anime.episodes} эп.</span>
-                            </div>` : ''}
-                        </div>
-                        <div class="p-3">
-                            <h3 class="anime-card-title text-center text-white">${anime.title}</h3>
-                        </div>
+                        <p class="popular-card-description">${truncateText(anime.description || 'Описание отсутствует.', 100)}</p>
                     </div>
                 `;
-            }
-
-            // Add event listeners to anime cards for showing details
-            function addAnimeCardListeners() {
-                document.querySelectorAll('.anime-card[data-id]').forEach(card => {
-                    card.addEventListener('click', () => {
-                        const animeId = card.getAttribute('data-id');
-                        showAnimeDetails(animeId);
-                    });
-                });
-            }
-
-            // Function to load data for a specific tab
-            async function loadTabData(tabId, page = 1, clear = false) {
-                const listElement = document.getElementById(`${tabId}-anime-list`);
-                const loadingElement = document.getElementById(`${tabId}-loading`);
                 
-                if (clear) {
-                    listElement.innerHTML = `
-                        <div class="col-span-full flex justify-center items-center p-8">
-                            <i class="fas fa-spinner fa-spin text-4xl text-white"></i>
-                        </div>
-                    `;
+                container.appendChild(card);
+            });
+        }
+        
+        // Отображение новых серий
+        function renderNewEpisodes(animes, container) {
+            container.innerHTML = '';
+            
+            if (!animes || animes.length === 0) {
+                container.innerHTML = '<p>Новых серий нет.</p>';
+                return;
+            }
+            
+            animes.forEach(anime => {
+                const card = document.createElement('div');
+                card.className = 'anime-card';
+                card.onclick = () => showAnimeDetail(anime.id);
+                
+                // Создание HTML для карточки
+                const imageUrl = anime.image ? `${SHIKIMORI_BASE_URL}${anime.image.original}` : 'https://picsum.photos/seed/anime-placeholder/400/600';
+                
+                card.innerHTML = `
+                    <div class="anime-card-image">
+                        <img src="${imageUrl}" alt="${anime.russian || anime.name}" onerror="this.src='https://picsum.photos/seed/anime-error/400/600'">
+                        <div class="anime-badge">Новое</div>
+                    </div>
+                    <div class="anime-card-content">
+                        <h3 class="anime-card-title">${anime.russian || anime.name}</h3>
+                        <p class="anime-card-episode">Серия ${anime.episodes_aired || anime.episodes || 1}</p>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Отображение пагинации для популярных аниме
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            // Кнопка "Назад"
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'pagination-btn';
+            prevBtn.textContent = '←';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadPopularAnimes();
                 }
-                
-                isLoading = true;
-                loadingElement.style.display = 'block';
-
-                try {
-                    const animeData = await fetchAnimeData(tabId, page, 24);
-                    
-                    if (animeData.length === 0) {
-                        if (clear) {
-                            listElement.innerHTML = `
-                                <div class="col-span-full text-center py-8">
-                                    <i class="fas fa-exclamation-triangle text-2xl text-yellow-500 mb-2"></i>
-                                    <p class="text-gray-400">Не удалось загрузить данные. Попробуйте позже.</p>
-                                </div>
-                            `;
-                        }
-                        hasMore[tabId] = false;
-                        return;
-                    }
-
-                    if (clear) {
-                        listElement.innerHTML = '';
-                    }
-                    
-                    animeData.forEach(anime => {
-                        listElement.innerHTML += createAnimeCard(anime);
-                    });
-
-                    // Add event listeners to the new cards
-                    setTimeout(addAnimeCardListeners, 100);
-                    
-                    // Update current page
-                    currentPage[tabId] = page;
-                } catch (error) {
-                    console.error(`Ошибка при загрузке данных для вкладки ${tabId}:`, error);
-                    if (clear) {
-                        listElement.innerHTML = `
-                            <div class="col-span-full text-center py-8">
-                                <i class="fas fa-exclamation-triangle text-2xl text-red-500 mb-2"></i>
-                                <p class="text-red-400">Произошла ошибка при загрузке данных.</p>
-                            </div>
-                        `;
-                    }
-                } finally {
-                    isLoading = false;
-                    loadingElement.style.display = 'none';
+            };
+            pagination.appendChild(prevBtn);
+            
+            // Номера страниц
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = 'pagination-btn';
+                if (i === currentPage) {
+                    pageBtn.classList.add('active');
                 }
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => {
+                    currentPage = i;
+                    loadPopularAnimes();
+                };
+                pagination.appendChild(pageBtn);
             }
-
-            // Function to load more anime for infinite scroll
-            async function loadMoreAnime() {
-                if (isLoading || !hasMore[currentTab]) return;
-                
-                await loadTabData(currentTab, currentPage[currentTab] + 1, false);
+            
+            // Кнопка "Вперед"
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'pagination-btn';
+            nextBtn.textContent = '→';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadPopularAnimes();
+                }
+            };
+            pagination.appendChild(nextBtn);
+        }
+        
+        // Отображение пагинации для всех аниме
+        function renderAllAnimesPagination() {
+            const pagination = document.getElementById('allAnimesPagination');
+            pagination.innerHTML = '';
+            
+            // Кнопка "Назад"
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'pagination-btn';
+            prevBtn.textContent = '←';
+            prevBtn.disabled = allAnimesCurrentPage === 1;
+            prevBtn.onclick = () => {
+                if (allAnimesCurrentPage > 1) {
+                    allAnimesCurrentPage--;
+                    loadAllAnimes();
+                }
+            };
+            pagination.appendChild(prevBtn);
+            
+            // Номера страниц
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, allAnimesCurrentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(allAnimesTotalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
             }
-
-            // Load initial data for the active tab (popular)
-            loadTabData('popular', 1, true);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = 'pagination-btn';
+                if (i === allAnimesCurrentPage) {
+                    pageBtn.classList.add('active');
+                }
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => {
+                    allAnimesCurrentPage = i;
+                    loadAllAnimes();
+                };
+                pagination.appendChild(pageBtn);
+            }
+            
+            // Кнопка "Вперед"
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'pagination-btn';
+            nextBtn.textContent = '→';
+            nextBtn.disabled = allAnimesCurrentPage === allAnimesTotalPages;
+            nextBtn.onclick = () => {
+                if (allAnimesCurrentPage < allAnimesTotalPages) {
+                    allAnimesCurrentPage++;
+                    loadAllAnimes();
+                }
+            };
+            pagination.appendChild(nextBtn);
+        }
+        
+        // Вспомогательные функции
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substr(0, maxLength) + '...';
+        }
+        
+        function getStatusText(status) {
+            switch (status) {
+                case 'anons': return 'Анонс';
+                case 'ongoing': return 'Онгоинг';
+                case 'released': return 'Завершено';
+                default: return status;
+            }
+        }
+        
+        // Анимация при прокрутке
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+        
+        // Наблюдаем за всеми секциями
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+        
+        // Обработка отправки формы поиска
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Загрузка популярных аниме
+            loadPopularAnimes();
+            
+            // Загрузка новых серий
+            loadNewEpisodes();
         });
     </script>
 </body>
