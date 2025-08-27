@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimePortal - Лучшие аниме онлайн</title>
+    <title>AniNex - Лучшие аниме онлайн</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -867,15 +867,14 @@
         
         .screenshot-slide {
             min-width: 100%;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr);
+            display: flex;
+            flex-direction: row;
             gap: 0.5rem;
             padding: 0.5rem;
         }
         
         .anime-detail-screenshot {
-            width: 100%;
+            flex: 1;
             height: 150px;
             object-fit: cover;
             border-radius: 0.25rem;
@@ -1052,7 +1051,7 @@
                     </button>
                     <a href="#" class="logo" onclick="showHomePage()">
                         <i class="fas fa-play-circle logo-icon"></i>
-                        <span class="logo-text">AnimePortal</span>
+                        <span class="logo-text">AniNex</span>
                     </a>
                 </div>
                 
@@ -1312,7 +1311,7 @@
                 <div>
                     <div class="footer-logo">
                         <i class="fas fa-play-circle footer-logo-icon"></i>
-                        <span class="footer-logo-text">AnimePortal</span>
+                        <span class="footer-logo-text">AniNex</span>
                     </div>
                     <p class="footer-description">Лучший портал для просмотра аниме онлайн</p>
                 </div>
@@ -1344,7 +1343,7 @@
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2024 AnimePortal. Все права защищены. Данные предоставлены Shikimori API.</p>
+                <p>&copy; 2024 AniNex. Все права защищены. Данные предоставлены Shikimori API.</p>
             </div>
         </div>
     </footer>
@@ -1949,7 +1948,7 @@
                         const slide = document.createElement('div');
                         slide.className = 'screenshot-slide';
                         
-                        // Добавляем скриншоты в сетку 2x2
+                        // Добавляем скриншоты в ряд 4x1
                         group.forEach((screenshot, index) => {
                             const img = document.createElement('img');
                             img.src = `${SHIKIMORI_BASE_URL}${screenshot.original}`;
