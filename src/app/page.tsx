@@ -32,6 +32,14 @@ interface Anime {
   description?: string;
 }
 
+interface AnimeVideo {
+  id: number;
+  url: string;
+  type: 'pv' | 'trailer' | 'promo' | 'op' | 'ed' | 'other';
+  name?: string;
+  player_url?: string;
+}
+
 export default function Home() {
   const router = useRouter();
   const [popularAnimes, setPopularAnimes] = useState<Anime[]>([]);
@@ -53,11 +61,16 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [activeTab, setActiveTab] = useState("popular");
+  const [featuredAnime, setFeaturedAnime] = useState<Anime | null>(null);
+  const [featuredVideoUrl, setFeaturedVideoUrl] = useState<string | null>(null);
+  const [featuredVideoType, setFeaturedVideoType] = useState<string>('');
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
   const { toast } = useToast();
   const { favorites, toggleFavorite, isFavorite, getFavoritesCount } = useFavorites();
 
   // Загрузка популярных аниме
   useEffect(() => {
+    loadFeaturedAnime();
     loadPopularAnimes();
     loadOngoingAnimes();
     loadNewAnimes();
@@ -279,6 +292,83 @@ export default function Home() {
     await loadNewAnimes(false);
   };
 
+  const loadFeaturedAnime = async () => {
+    setLoadingFeatured(true);
+    try {
+      // Получаем топ-50 популярных аниме для выбора случайного
+      const response = await fetch(`/api/anime/popular?limit=50&page=1&order=popularity`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.length > 0) {
+          // Выбираем случайное аниме из топ-50
+          const randomIndex = Math.floor(Math.random() * Math.min(data.length, 50));
+          const featured = data[randomIndex];
+          setFeaturedAnime(featured);
+          
+          // Получаем видео для этого аниме
+          try {
+            const videoResponse = await fetch(`/api/anime/${featured.id}/videos`);
+            if (videoResponse.ok) {
+              const videos = await videoResponse.json();
+              
+              // Ищем трейлер или промо видео
+              let trailerUrl = null;
+              let videoType = '';
+              
+              // Ищем в разных типах видео
+              if (videos && Array.isArray(videos)) {
+                // Приоритет: pv > trailer > promo > op > ed
+                const videoTypes = ['pv', 'trailer', 'promo', 'op', 'ed'];
+                
+                for (const type of videoTypes) {
+                  const videoOfType = videos.find(v => v.kind === type);
+                  if (videoOfType && videoOfType.url) {
+                    // Преобразуем URL в формат для встраивания
+                    if (videoOfType.url.includes('youtube.com') || videoOfType.url.includes('youtu.be')) {
+                      const videoId = extractYouTubeId(videoOfType.url);
+                      if (videoId) {
+                        trailerUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&disablekb=1&fs=0`;
+                        videoType = type;
+                        break;
+                      }
+                    } else if (videoOfType.url.includes('vk.com')) {
+                      // Для VK видео используем прямую ссылку если возможно
+                      trailerUrl = videoOfType.url;
+                      videoType = type;
+                      break;
+                    }
+                  }
+                }
+              }
+              
+              setFeaturedVideoUrl(trailerUrl);
+              setFeaturedVideoType(videoType);
+            }
+          } catch (videoError) {
+            console.error("Error loading featured anime video:", videoError);
+            // Продолжаем без видео
+          }
+        }
+      } else {
+        throw new Error("Failed to fetch featured anime");
+      }
+    } catch (error) {
+      console.error("Error loading featured anime:", error);
+      // В случае ошибки, устанавливаем null и будем использовать заглушку
+      setFeaturedAnime(null);
+    } finally {
+      setLoadingFeatured(false);
+    }
+  };
+
+  // Функция для извлечения ID видео из YouTube URL
+  const extractYouTubeId = (url: string): string | null => {
+    const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+  };
+
   const getStatusText = (status: string) => {
     switch (status) {
       case "anons": return "Анонс";
@@ -313,35 +403,175 @@ export default function Home() {
       {/* Шапка сайта */}
       <Header />
 
-      {/* Главный баннер */}
+      {/* Главный баннер с фоновым видео */}
       <section className="relative h-96 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/80 z-10" />
-        <img
-          src="https://picsum.photos/seed/anime-banner/1920/400"
-          alt="Featured Anime"
-          className="w-full h-full object-cover"
-        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/90 z-10" />
+        
+        {/* Фоновое видео/изображение */}
+        {featuredAnime ? (
+          <>
+            {featuredVideoUrl ? (
+              featuredVideoUrl.includes('youtube.com/embed') ? (
+                // Для YouTube видео используем специальную обертку для полного покрытия
+                <div className="hero-youtube-container absolute inset-0 overflow-hidden bg-black">
+                  <iframe
+                    src={featuredVideoUrl}
+                    className="hero-youtube-iframe"
+                    frameBorder="0"
+                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                    allowFullScreen
+                    title={`${featuredAnime.russian || featuredAnime.name} трейлер`}
+                  />
+                </div>
+              ) : (
+                // Для других видео (VK и т.д.)
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                  poster={`https://shikimori.one${featuredAnime.image.original}`}
+                >
+                  <source src={featuredVideoUrl} type="video/mp4" />
+                  {/* Если видео не загрузится, показываем изображение */}
+                  <img
+                    src={`https://shikimori.one${featuredAnime.image.original}`}
+                    alt={featuredAnime.russian || featuredAnime.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = `https://picsum.photos/seed/anime-${featuredAnime.id}/1920/400`;
+                    }}
+                  />
+                </video>
+              )
+            ) : (
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover"
+                poster={`https://shikimori.one${featuredAnime.image.original}`}
+              >
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+                {/* Если видео не загрузится, показываем изображение */}
+                <img
+                  src={`https://shikimori.one${featuredAnime.image.original}`}
+                  alt={featuredAnime.russian || featuredAnime.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = `https://picsum.photos/seed/anime-${featuredAnime.id}/1920/400`;
+                  }}
+                />
+              </video>
+            )}
+          </>
+        ) : (
+          <img
+            src="https://picsum.photos/seed/anime-banner/1920/400"
+            alt="Featured Anime"
+            className="w-full h-full object-cover"
+          />
+        )}
+        
         <div className="absolute inset-0 z-20 flex items-center">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl text-white">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                Аниме портал с плеерами Kodik и Alloha
-              </h2>
-              <p className="text-lg md:text-xl mb-6 text-gray-200">
-                Лучшие аниме с высоким качеством видео
-              </p>
-              <div className="flex gap-4">
-                <Button size="lg" className="bg-primary hover:bg-primary/90">
-                  <Play className="mr-2 h-5 w-5" />
-                  Смотреть
-                </Button>
-                <Button variant="secondary" size="lg">
-                  Подробнее
-                </Button>
-              </div>
+              {featuredAnime ? (
+                <>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                    {featuredAnime.russian || featuredAnime.name}
+                  </h2>
+                  <p className="text-lg md:text-xl mb-6 text-gray-200">
+                    {featuredAnime.description ? 
+                      (featuredAnime.description.length > 150 ? 
+                        featuredAnime.description.substring(0, 150) + '...' : 
+                        featuredAnime.description) : 
+                      'Популярное аниме с высоким качеством видео'
+                    }
+                  </p>
+                  <div className="flex items-center gap-4 mb-6">
+                    <Badge variant="secondary" className="bg-black/80 text-white">
+                      <Star className="h-3 w-3 mr-1 fill-current" />
+                      {featuredAnime.score || "N/A"}
+                    </Badge>
+                    <Badge variant="secondary" className="bg-black/80 text-white">
+                      {getStatusText(featuredAnime.status)}
+                    </Badge>
+                    <Badge variant="secondary" className="bg-black/80 text-white">
+                      {featuredAnime.episodes || featuredAnime.episodes_aired || "?"} эп.
+                    </Badge>
+                    {featuredVideoType && (
+                      <Badge variant="secondary" className="bg-red-600/80 text-white">
+                        {featuredVideoType.toUpperCase()}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex gap-4">
+                    <Button 
+                      size="lg" 
+                      className="bg-primary hover:bg-primary/90"
+                      onClick={() => handleAnimeClick(featuredAnime.id)}
+                    >
+                      <Play className="mr-2 h-5 w-5" />
+                      Смотреть
+                    </Button>
+                    <Button 
+                      variant="secondary" 
+                      size="lg"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const added = toggleFavorite(featuredAnime);
+                        if (added) {
+                          toast({
+                            title: "Добавлено в избранное",
+                            description: `${featuredAnime.russian || featuredAnime.name} добавлено в избранное`,
+                          });
+                        } else {
+                          toast({
+                            title: "Удалено из избранного",
+                            description: `${featuredAnime.russian || featuredAnime.name} удалено из избранного`,
+                          });
+                        }
+                      }}
+                    >
+                      <Heart className={`mr-2 h-5 w-5 ${isFavorite(featuredAnime.id) ? 'fill-current' : ''}`} />
+                      {isFavorite(featuredAnime.id) ? 'В избранном' : 'В избранное'}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                    Аниме портал с плеерами Kodik и Alloha
+                  </h2>
+                  <p className="text-lg md:text-xl mb-6 text-gray-200">
+                    Лучшие аниме с высоким качеством видео
+                  </p>
+                  <div className="flex gap-4">
+                    <Button size="lg" className="bg-primary hover:bg-primary/90">
+                      <Play className="mr-2 h-5 w-5" />
+                      Смотреть
+                    </Button>
+                    <Button variant="secondary" size="lg">
+                      Подробнее
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
+        
+        {/* Индикатор загрузки */}
+        {loadingFeatured && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          </div>
+        )}
       </section>
 
       {/* Контент */}
