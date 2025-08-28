@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, ArrowLeft, Star, Clock, Calendar, Users } from "lucide-react";
+import { Heart, Star, Clock, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useToast } from "@/hooks/use-toast";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Header } from "@/components/header";
 
 export default function FavoritesPage() {
   const router = useRouter();
@@ -59,19 +59,8 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Навигация */}
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center">
-            <Button variant="ghost" onClick={() => router.back()} className="mr-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Назад
-            </Button>
-            <h1 className="text-xl font-bold">Избранное</h1>
-          </div>
-          <ThemeToggle />
-        </div>
-      </nav>
+      {/* Шапка сайта */}
+      <Header currentPage="Избранное" showSearch={false} />
 
       <div className="container mx-auto px-4 py-8">
         {favorites.length === 0 ? (
@@ -113,11 +102,13 @@ export default function FavoritesPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
                       <Heart className="h-8 w-8 text-red-500 fill-current" />
                     </div>
-                    <div className="absolute top-2 right-2 flex flex-col gap-1">
+                    <div className="absolute top-2 right-2">
                       <Badge variant="secondary" className="bg-black/80 text-white">
                         <Star className="h-3 w-3 mr-1 fill-current" />
                         {anime.score || "N/A"}
                       </Badge>
+                    </div>
+                    <div className="absolute bottom-2 right-2">
                       <Button
                         variant="ghost"
                         size="sm"

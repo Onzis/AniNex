@@ -2,16 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Play, Star, Clock, Heart, Filter, Moon } from "lucide-react";
+import { Search, Play, Star, Clock, Heart, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/hooks/use-favorites";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Header } from "@/components/header";
 
 interface Anime {
   id: number;
@@ -35,40 +34,77 @@ interface Anime {
 
 export default function Home() {
   const router = useRouter();
-  const [animes, setAnimes] = useState<Anime[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState<Anime[]>([]);
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [popularAnimes, setPopularAnimes] = useState<Anime[]>([]);
+  const [ongoingAnimes, setOngoingAnimes] = useState<Anime[]>([]);
+  const [newAnimes, setNewAnimes] = useState<Anime[]>([]);
+  const [loadingPopular, setLoadingPopular] = useState(true);
+  const [loadingOngoing, setLoadingOngoing] = useState(true);
+  const [loadingNew, setLoadingNew] = useState(true);
+  const [loadingMorePopular, setLoadingMorePopular] = useState(false);
+  const [loadingMoreOngoing, setLoadingMoreOngoing] = useState(false);
+  const [loadingMoreNew, setLoadingMoreNew] = useState(false);
+  const [popularPage, setPopularPage] = useState(1);
+  const [ongoingPage, setOngoingPage] = useState(1);
+  const [newPage, setNewPage] = useState(1);
+  const [hasMorePopular, setHasMorePopular] = useState(true);
+  const [hasMoreOngoing, setHasMoreOngoing] = useState(true);
+  const [hasMoreNew, setHasMoreNew] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [activeTab, setActiveTab] = useState("popular");
   const { toast } = useToast();
   const { favorites, toggleFavorite, isFavorite, getFavoritesCount } = useFavorites();
 
   // Загрузка популярных аниме
   useEffect(() => {
     loadPopularAnimes();
-  }, [currentPage, statusFilter]);
+    loadOngoingAnimes();
+    loadNewAnimes();
+  }, []);
 
-  // Обработка поиска с дебаунсингом
+  // Обновление популярных аниме при изменении фильтра
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchTerm.trim()) {
-        handleSearchDropdown(searchTerm);
-      } else {
-        setSearchResults([]);
-        setShowSearchDropdown(false);
+    setPopularPage(1);
+    setPopularAnimes([]);
+    setHasMorePopular(true);
+    loadPopularAnimes();
+  }, [statusFilter]);
+
+  // Обработка бесконечного скролла
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      
+      if (scrollTop + clientHeight >= scrollHeight - 1000) { // 1000px до конца
+        if (activeTab === "popular" && !loadingPopular && !loadingMorePopular && hasMorePopular) {
+          loadMorePopularAnimes();
+        } else if (activeTab === "ongoing" && !loadingOngoing && !loadingMoreOngoing && hasMoreOngoing) {
+          loadMoreOngoingAnimes();
+        } else if (activeTab === "new" && !loadingNew && !loadingMoreNew && hasMoreNew) {
+          loadMoreNewAnimes();
+        }
       }
-    }, 300);
+    };
 
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeTab, loadingPopular, loadingOngoing, loadingNew, loadingMorePopular, loadingMoreOngoing, loadingMoreNew, hasMorePopular, hasMoreOngoing, hasMoreNew]);
 
-  const loadPopularAnimes = async () => {
-    setLoading(true);
+  const loadPopularAnimes = async (reset = true) => {
+    if (reset) {
+      setLoadingPopular(true);
+      setPopularPage(1);
+      setPopularAnimes([]);
+    } else {
+      setLoadingMorePopular(true);
+    }
+    
     try {
-      let apiUrl = `/api/anime/popular?limit=20&page=${currentPage}&order=popularity`;
+      const page = reset ? 1 : popularPage;
+      let apiUrl = `/api/anime/popular?limit=20&page=${page}&order=popularity`;
       
       if (statusFilter !== "all") {
         apiUrl += `&status=${statusFilter}`;
@@ -78,77 +114,169 @@ export default function Home() {
 
       if (response.ok) {
         const data = await response.json();
-        setAnimes(data);
-        setTotalPages(Math.ceil(data.length / 20));
+        
+        if (reset) {
+          setPopularAnimes(data);
+        } else {
+          setPopularAnimes(prev => [...prev, ...data]);
+        }
+        
+        // Если получили меньше 20 аниме, значит это последняя страница
+        if (data.length < 20) {
+          setHasMorePopular(false);
+        } else {
+          setPopularPage(prev => prev + 1);
+        }
       } else {
-        throw new Error("Failed to fetch animes");
+        throw new Error("Failed to fetch popular animes");
       }
     } catch (error) {
-      console.error("Error loading animes:", error);
+      console.error("Error loading popular animes:", error);
       toast({
         title: "Ошибка загрузки",
-        description: "Не удалось загрузить аниме. Попробуйте позже.",
+        description: "Не удалось загрузить популярные аниме. Попробуйте позже.",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      loadPopularAnimes();
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/anime/search?q=${encodeURIComponent(searchTerm)}&limit=20`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setAnimes(data);
-        setShowSearchDropdown(false);
+      if (reset) {
+        setLoadingPopular(false);
       } else {
-        throw new Error("Search failed");
+        setLoadingMorePopular(false);
       }
-    } catch (error) {
-      console.error("Error searching animes:", error);
-      toast({
-        title: "Ошибка поиска",
-        description: "Не удалось выполнить поиск. Попробуйте позже.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleSearchDropdown = async (term: string) => {
-    if (!term.trim()) {
-      setSearchResults([]);
-      setShowSearchDropdown(false);
-      return;
-    }
+  const loadMorePopularAnimes = async () => {
+    await loadPopularAnimes(false);
+  };
 
+  const loadOngoingAnimes = async (reset = true) => {
+    if (reset) {
+      setLoadingOngoing(true);
+      setOngoingPage(1);
+      setOngoingAnimes([]);
+    } else {
+      setLoadingMoreOngoing(true);
+    }
+    
     try {
-      const response = await fetch(`/api/anime/search?q=${encodeURIComponent(term)}&limit=8`);
+      const page = reset ? 1 : ongoingPage;
+      const response = await fetch(`/api/anime/popular?limit=20&page=${page}&order=popularity&status=ongoing`);
 
       if (response.ok) {
         const data = await response.json();
-        setSearchResults(data);
-        setShowSearchDropdown(true);
+        
+        if (reset) {
+          setOngoingAnimes(data);
+        } else {
+          setOngoingAnimes(prev => [...prev, ...data]);
+        }
+        
+        // Если получили меньше 20 аниме, значит это последняя страница
+        if (data.length < 20) {
+          setHasMoreOngoing(false);
+        } else {
+          setOngoingPage(prev => prev + 1);
+        }
+      } else {
+        throw new Error("Failed to fetch ongoing animes");
       }
     } catch (error) {
-      console.error("Error searching dropdown:", error);
+      console.error("Error loading ongoing animes:", error);
+      toast({
+        title: "Ошибка загрузки",
+        description: "Не удалось загрузить онгоинги. Попробуйте позже.",
+        variant: "destructive",
+      });
+    } finally {
+      if (reset) {
+        setLoadingOngoing(false);
+      } else {
+        setLoadingMoreOngoing(false);
+      }
     }
   };
 
-  const handleSearchResultClick = (animeId: number) => {
-    setShowSearchDropdown(false);
-    setSearchTerm("");
-    setSearchResults([]);
-    router.push(`/anime/${animeId}`);
+  const loadMoreOngoingAnimes = async () => {
+    await loadOngoingAnimes(false);
+  };
+
+  const loadNewAnimes = async (reset = true) => {
+    if (reset) {
+      setLoadingNew(true);
+      setNewPage(1);
+      setNewAnimes([]);
+    } else {
+      setLoadingMoreNew(true);
+    }
+    
+    try {
+      // Получаем анонсы - самые ожидаемые новинки
+      const page = reset ? 1 : newPage;
+      const response = await fetch(`/api/anime/popular?limit=15&page=${page}&status=anons&order=id`);
+      
+      let data;
+      if (response.ok) {
+        const anons = await response.json();
+        
+        // Получаем онгоинги - текущие новинки
+        const ongoingResponse = await fetch(`/api/anime/popular?limit=15&page=${page}&status=ongoing&order=id`);
+        
+        if (ongoingResponse.ok) {
+          const ongoing = await ongoingResponse.json();
+          
+          // Объединяем анонсы и онгоинги, сортируем по ID (новые выше)
+          const combined = [...anons, ...ongoing]
+            .sort((a, b) => b.id - a.id) // Сортировка по ID в обратном порядке
+            .slice(0, 20); // Берем только 20 самых свежих
+            
+          data = combined;
+        } else {
+          // Если не удалось получить онгоинги, используем только анонсы
+          data = anons;
+        }
+      } else {
+        // Если не удалось получить анонсы, пробуем получить самые свежие по ID
+        const fallbackResponse = await fetch(`/api/anime/popular?limit=20&page=${page}&order=id`);
+        if (fallbackResponse.ok) {
+          data = await fallbackResponse.json();
+          // Реверсируем массив, чтобы самые новые были первыми
+          data = data.reverse();
+        } else {
+          throw new Error("Failed to fetch new animes");
+        }
+      }
+      
+      if (reset) {
+        setNewAnimes(data);
+      } else {
+        setNewAnimes(prev => [...prev, ...data]);
+      }
+      
+      // Если получили мало аниме, значит это последняя страница
+      if (data.length < 15) {
+        setHasMoreNew(false);
+      } else {
+        setNewPage(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error loading new animes:", error);
+      toast({
+        title: "Ошибка загрузки",
+        description: "Не удалось загрузить новинки. Попробуйте позже.",
+        variant: "destructive",
+      });
+    } finally {
+      if (reset) {
+        setLoadingNew(false);
+      } else {
+        setLoadingMoreNew(false);
+      }
+    }
+  };
+
+  const loadMoreNewAnimes = async () => {
+    await loadNewAnimes(false);
   };
 
   const getStatusText = (status: string) => {
@@ -182,53 +310,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Навигация */}
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            {/* Логотип */}
-            <div className="flex items-center space-x-2">
-              <Play className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold">AniNex</h1>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            {/* Поиск с выпадающим списком */}
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Поиск аниме..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="w-64 pr-10"
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3"
-                onClick={handleSearch}
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-              
-              {/* Выпадающий список результатов поиска */}
-              {searchTerm && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
-                  {/* Здесь будут динамически добавляться результаты поиска */}
-                  <div className="p-2 text-sm text-muted-foreground">
-                    Нажмите Enter для поиска "{searchTerm}"
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Переключатель темы */}
-            <ThemeToggle />
-          </div>
-        </div>
-      </nav>
+      {/* Шапка сайта */}
+      <Header />
 
       {/* Главный баннер */}
       <section className="relative h-96 overflow-hidden">
@@ -263,7 +346,7 @@ export default function Home() {
 
       {/* Контент */}
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="popular" className="w-full">
+        <Tabs defaultValue="popular" className="w-full" onValueChange={(value) => setActiveTab(value)}>
           <div className="flex justify-between items-center mb-6">
             <TabsList>
               <TabsTrigger value="popular">Популярные</TabsTrigger>
@@ -289,8 +372,10 @@ export default function Home() {
 
           <TabsContent value="popular" className="mt-0">
             <AnimeGrid
-              animes={animes}
-              loading={loading}
+              animes={popularAnimes}
+              loading={loadingPopular}
+              loadingMore={loadingMorePopular}
+              hasMore={hasMorePopular}
               onAnimeClick={handleAnimeClick}
               onFavoriteClick={handleFavoriteClick}
               getStatusText={getStatusText}
@@ -300,8 +385,10 @@ export default function Home() {
           
           <TabsContent value="ongoing" className="mt-0">
             <AnimeGrid
-              animes={animes.filter(a => a.status === "ongoing")}
-              loading={loading}
+              animes={ongoingAnimes}
+              loading={loadingOngoing}
+              loadingMore={loadingMoreOngoing}
+              hasMore={hasMoreOngoing}
               onAnimeClick={handleAnimeClick}
               onFavoriteClick={handleFavoriteClick}
               getStatusText={getStatusText}
@@ -311,8 +398,10 @@ export default function Home() {
           
           <TabsContent value="new" className="mt-0">
             <AnimeGrid
-              animes={animes}
-              loading={loading}
+              animes={newAnimes}
+              loading={loadingNew}
+              loadingMore={loadingMoreNew}
+              hasMore={hasMoreNew}
               onAnimeClick={handleAnimeClick}
               onFavoriteClick={handleFavoriteClick}
               getStatusText={getStatusText}
@@ -328,13 +417,15 @@ export default function Home() {
 interface AnimeGridProps {
   animes: Anime[];
   loading: boolean;
+  loadingMore?: boolean;
+  hasMore?: boolean;
   onAnimeClick: (id: number) => void;
   onFavoriteClick: (anime: Anime, e: React.MouseEvent) => void;
   getStatusText: (status: string) => string;
   isFavorite: (id: number) => boolean;
 }
 
-function AnimeGrid({ animes, loading, onAnimeClick, onFavoriteClick, getStatusText, isFavorite }: AnimeGridProps) {
+function AnimeGrid({ animes, loading, loadingMore = false, hasMore = true, onAnimeClick, onFavoriteClick, getStatusText, isFavorite }: AnimeGridProps) {
   if (loading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -360,60 +451,78 @@ function AnimeGrid({ animes, loading, onAnimeClick, onFavoriteClick, getStatusTe
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-      {animes.map((anime) => (
-        <Card 
-          key={anime.id} 
-          className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden group"
-          onClick={() => onAnimeClick(anime.id)}
-        >
-          <div className="relative aspect-[2/3] overflow-hidden">
-            <img
-              src={`https://shikimori.one${anime.image.original}`}
-              alt={anime.russian || anime.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = `https://picsum.photos/seed/anime-${anime.id}/300/450`;
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-              <Play className="h-8 w-8 text-white" />
-            </div>
-            <div className="absolute top-2 right-2 flex flex-col gap-1">
-              <Badge variant="secondary" className="bg-black/80 text-white">
-                <Star className="h-3 w-3 mr-1 fill-current" />
-                {anime.score || "N/A"}
-              </Badge>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 bg-black/80 hover:bg-black/90 text-white hover:text-white"
-                onClick={(e) => onFavoriteClick(anime, e)}
-              >
-                <Heart className={`h-4 w-4 ${isFavorite(anime.id) ? 'fill-current text-red-500' : ''}`} />
-              </Button>
-            </div>
-            {anime.status === "ongoing" && (
-              <div className="absolute top-2 left-2">
-                <Badge className="bg-red-600 hover:bg-red-700">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Онгоинг
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {animes.map((anime) => (
+          <Card 
+            key={anime.id} 
+            className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden group"
+            onClick={() => onAnimeClick(anime.id)}
+          >
+            <div className="relative aspect-[2/3] overflow-hidden">
+              <img
+                src={`https://shikimori.one${anime.image.original}`}
+                alt={anime.russian || anime.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = `https://picsum.photos/seed/anime-${anime.id}/300/450`;
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                <Play className="h-8 w-8 text-white" />
+              </div>
+              <div className="absolute top-2 right-2">
+                <Badge variant="secondary" className="bg-black/80 text-white">
+                  <Star className="h-3 w-3 mr-1 fill-current" />
+                  {anime.score || "N/A"}
                 </Badge>
               </div>
-            )}
-          </div>
-          <CardContent className="p-3">
-            <h3 className="font-semibold text-sm line-clamp-2 mb-1">
-              {anime.russian || anime.name}
-            </h3>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{getStatusText(anime.status)}</span>
-              <span>{anime.episodes || anime.episodes_aired || "?"} эп.</span>
+              <div className="absolute bottom-2 right-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 bg-black/80 hover:bg-black/90 text-white hover:text-white"
+                  onClick={(e) => onFavoriteClick(anime, e)}
+                >
+                  <Heart className={`h-4 w-4 ${isFavorite(anime.id) ? 'fill-current text-red-500' : ''}`} />
+                </Button>
+              </div>
+              {anime.status === "ongoing" && (
+                <div className="absolute top-2 left-2">
+                  <Badge className="bg-red-600 hover:bg-red-700">
+                    <Clock className="h-3 w-3 mr-1" />
+                    Онгоинг
+                  </Badge>
+                </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      ))}
+            <CardContent className="p-3">
+              <h3 className="font-semibold text-sm line-clamp-2 mb-1">
+                {anime.russian || anime.name}
+              </h3>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{getStatusText(anime.status)}</span>
+                <span>{anime.episodes || anime.episodes_aired || "?"} эп.</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      {/* Индикатор загрузки дополнительных данных */}
+      {loadingMore && (
+        <div className="flex justify-center py-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      )}
+      
+      {/* Сообщение о завершении загрузки */}
+      {!hasMore && animes.length > 0 && !loading && (
+        <div className="text-center py-4 text-muted-foreground">
+          Вы просмотрели все доступные аниме
+        </div>
+      )}
     </div>
   );
 }

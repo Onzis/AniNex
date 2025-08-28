@@ -16,8 +16,8 @@ export function ScreenshotsGallery({ screenshots }: ScreenshotsGalleryProps) {
   const [currentX, setCurrentX] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Группируем скриншоты по 4x4 = 16 штук на страницу
-  const screenshotsPerPage = 16;
+  // Группируем скриншоты по 3x2 = 6 штук на страницу
+  const screenshotsPerPage = 6;
   const totalPages = Math.ceil(screenshots.length / screenshotsPerPage);
   
   const getCurrentPageScreenshots = () => {
@@ -28,11 +28,11 @@ export function ScreenshotsGallery({ screenshots }: ScreenshotsGalleryProps) {
 
   const createScreenshotGrid = (pageScreenshots: any[]) => {
     const grid = [];
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 6; i++) {
       if (i < pageScreenshots.length) {
         grid.push(pageScreenshots[i]);
       } else {
-        // Добавляем пустые места для заполнения сетки 4x4
+        // Добавляем пустые места для заполнения сетки 3x2
         grid.push(null);
       }
     }
@@ -149,8 +149,8 @@ export function ScreenshotsGallery({ screenshots }: ScreenshotsGalleryProps) {
             onTouchEnd={handleTouchEnd}
             style={{ cursor: 'grab' }}
           >
-            {/* Сетка 4x4 */}
-            <div className="grid grid-cols-4 gap-2">
+            {/* Сетка 3x2 */}
+            <div className="grid grid-cols-3 gap-2">
               {screenshotGrid.map((screenshot, index) => (
                 <div key={index} className="aspect-video rounded-lg overflow-hidden bg-muted">
                   {screenshot ? (

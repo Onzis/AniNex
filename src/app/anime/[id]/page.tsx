@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Play, Star, Heart, Calendar, Clock, Film, Users } from "lucide-react";
+import { Play, Star, Heart, Calendar, Clock, Film, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { useNotifications } from "@/hooks/use-notifications";
 import { useFavorites } from "@/hooks/use-favorites";
 import { PlayerStatus } from "@/components/player-status";
 import { ScreenshotsGallery } from "@/components/screenshots-gallery";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Header } from "@/components/header";
 
 interface Anime {
   id: number;
@@ -223,10 +223,6 @@ export default function AnimeDetailPage() {
     }
   };
 
-  const handleBack = () => {
-    router.back();
-  };
-
   const handleFavoriteClick = () => {
     if (!anime) return;
     
@@ -251,9 +247,8 @@ export default function AnimeDetailPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Аниме не найдено</h1>
-          <Button onClick={handleBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Вернуться назад
+          <Button onClick={() => router.push("/")}>
+            На главную
           </Button>
         </div>
       </div>
@@ -262,19 +257,8 @@ export default function AnimeDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Навигация */}
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center">
-            <Button variant="ghost" onClick={handleBack} className="mr-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Назад
-            </Button>
-            <h1 className="text-xl font-bold">{anime.russian || anime.name}</h1>
-          </div>
-          <ThemeToggle />
-        </div>
-      </nav>
+      {/* Шапка сайта */}
+      <Header currentPage={anime.russian || anime.name} />
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
