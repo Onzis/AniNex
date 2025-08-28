@@ -931,6 +931,91 @@
             background-color: var(--primary-color);
         }
         
+        /* Плееры для просмотра аниме */
+        .anime-players {
+            margin-top: 2rem;
+        }
+        
+        .players-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--bg-light);
+        }
+        
+        .player-tab {
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s ease, border-bottom 0.2s ease;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .player-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .player-content {
+            background-color: var(--bg-medium);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            min-height: 400px;
+            position: relative;
+        }
+        
+        .player-frame {
+            display: none;
+            width: 100%;
+            height: 400px;
+            background-color: var(--bg-light);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .player-frame.active {
+            display: block;
+        }
+        
+        .player-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .player-placeholder-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .player-placeholder-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .player-placeholder-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .player-token {
+            background-color: var(--bg-light);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
         .back-button {
             display: inline-flex;
             align-items: center;
@@ -1241,6 +1326,51 @@
                 <!-- Индикаторы будут добавлены динамически -->
             </div>
         </div>
+        
+        <!-- Плееры для просмотра аниме -->
+        <div class="anime-detail-section">
+            <h2 class="anime-detail-section-title">Плееры для просмотра аниме</h2>
+            <div class="anime-players">
+                <div class="players-tabs">
+                    <button class="player-tab active" onclick="switchPlayer('kodik')">Kodik</button>
+                    <button class="player-tab" onclick="switchPlayer('alloha')">Alloha</button>
+                </div>
+                
+                <div class="player-content">
+                    <!-- Плеер Kodik -->
+                    <div id="kodik-player" class="player-frame active">
+                        <div class="player-placeholder">
+                            <i class="fas fa-play-circle player-placeholder-icon"></i>
+                            <h3 class="player-placeholder-title">Kodik Player</h3>
+                            <p class="player-placeholder-description">
+                                Плеер для просмотра аниме с высоким качеством видео
+                            </p>
+                            <div class="player-token">Токен: 447d179e875efe44217f20d1ee2146be</div>
+                            <button class="btn-primary" onclick="initKodikPlayer()">
+                                <i class="fas fa-play"></i>
+                                Инициализировать плеер
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Плеер Alloha -->
+                    <div id="alloha-player" class="player-frame">
+                        <div class="player-placeholder">
+                            <i class="fas fa-play-circle player-placeholder-icon"></i>
+                            <h3 class="player-placeholder-title">Alloha Player</h3>
+                            <p class="player-placeholder-description">
+                                Альтернативный плеер для просмотра аниме
+                            </p>
+                            <div class="player-token">Токен: 96b62ea8e72e7452b652e461ab8b89</div>
+                            <button class="btn-primary" onclick="initAllohaPlayer()">
+                                <i class="fas fa-play"></i>
+                                Инициализировать плеер
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Футер -->
@@ -1312,6 +1442,13 @@
         // Переменные для поиска
         let searchTimeout;
         let searchResults = [];
+        
+        // Переменные для плееров
+        let currentAnimeId = null;
+        
+        // Токены для плееров
+        const KodikToken = "447d179e875efe44217f20d1ee2146be";
+        const AllohaToken = "96b62ea8e72e7452b652e461ab8b89";
         
         // Конфигурация API
         const API_BASE_URL = 'https://shikimori.one/api';
@@ -1476,6 +1613,9 @@
             document.getElementById('homePage').style.display = 'none';
             document.getElementById('allAnimesPage').style.display = 'none';
             document.getElementById('animeDetailPage').classList.add('active');
+            
+            // Сохраняем ID текущего аниме
+            currentAnimeId = animeId;
             
             // Загрузка деталей аниме
             loadAnimeDetails(animeId);
@@ -1849,7 +1989,8 @@
                     
                     // Обновление кнопок
                     document.querySelector('.anime-detail-actions .btn-primary').onclick = () => {
-                        alert(`Переход к просмотру: ${anime.russian || anime.name}`);
+                        // Прокрутка к плеерам
+                        document.querySelector('.anime-players').scrollIntoView({ behavior: 'smooth' });
                     };
                     
                     document.querySelector('.anime-detail-actions .btn-secondary').onclick = () => {
@@ -2108,6 +2249,79 @@
                 prevBtn.style.display = 'block';
                 nextBtn.style.display = 'block';
             }
+        }
+        
+        // Переключение плеера
+        function switchPlayer(playerType) {
+            // Обновление активной вкладки
+            document.querySelectorAll('.player-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Обновление активного плеера
+            document.querySelectorAll('.player-frame').forEach(frame => {
+                frame.classList.remove('active');
+            });
+            document.getElementById(`${playerType}-player`).classList.add('active');
+        }
+        
+        // Инициализация плеера Kodik
+        function initKodikPlayer() {
+            const playerContainer = document.getElementById('kodik-player');
+            
+            // Очищаем контейнер
+            playerContainer.innerHTML = `
+                <div class="loader">
+                    <div class="spinner"></div>
+                </div>
+            `;
+            
+            // Имитация загрузки плеера
+            setTimeout(() => {
+                playerContainer.innerHTML = `
+                    <div class="player-placeholder">
+                        <i class="fas fa-check-circle player-placeholder-icon" style="color: #10b981;"></i>
+                        <h3 class="player-placeholder-title">Kodik Player инициализирован</h3>
+                        <p class="player-placeholder-description">
+                            Плеер готов к воспроизведению аниме с ID: ${currentAnimeId}
+                        </p>
+                        <div class="player-token">Токен: ${KodikToken}</div>
+                        <div style="background-color: var(--bg-light); width: 100%; height: 200px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; margin-top: 1rem;">
+                            <i class="fas fa-play-circle" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        </div>
+                    </div>
+                `;
+            }, 1500);
+        }
+        
+        // Инициализация плеера Alloha
+        function initAllohaPlayer() {
+            const playerContainer = document.getElementById('alloha-player');
+            
+            // Очищаем контейнер
+            playerContainer.innerHTML = `
+                <div class="loader">
+                    <div class="spinner"></div>
+                </div>
+            `;
+            
+            // Имитация загрузки плеера
+            setTimeout(() => {
+                playerContainer.innerHTML = `
+                    <div class="player-placeholder">
+                        <i class="fas fa-check-circle player-placeholder-icon" style="color: #10b981;"></i>
+                        <h3 class="player-placeholder-title">Alloha Player инициализирован</h3>
+                        <p class="player-placeholder-description">
+                            Плеер готов к воспроизведению аниме с ID: ${currentAnimeId}
+                        </p>
+                        <div class="player-token">Токен: ${AllohaToken}</div>
+                        <div style="background-color: var(--bg-light); width: 100%; height: 200px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; margin-top: 1rem;">
+                            <i class="fas fa-play-circle" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        </div>
+                    </div>
+                `;
+            }, 1500);
         }
         
         // Отображение аниме
